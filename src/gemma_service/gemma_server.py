@@ -23,7 +23,17 @@ async def ws_endpoint(websocket: WebSocket):
 
                 request_id = data.get("request_id")
                 user_text = data.get("text", "")
+                route_signal = data.get("route")
 
+                #route signal decision hints at what the user intends and proceeds as required.
+                ## 1. Word suggestion
+                ## 2. Sentence generation
+                ## 3. Query
+                ## 4. Fun interaction.
+
+
+                ## Manage the context.
+                ## 
                 async with SEM:
                     resp = await client.post(
                         GEMMA_URL,
