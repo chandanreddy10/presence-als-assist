@@ -5,9 +5,9 @@ import asyncio
 
 app = FastAPI()
 
+#gemma URL for serving
 GEMMA_URL = "http://localhost:8001/gemma"
 
-# optional: limit GPU concurrency
 SEM = asyncio.Semaphore(2)
 
 
@@ -32,7 +32,7 @@ async def ws_endpoint(websocket: WebSocket):
 
                 result = resp.json()
 
-                # single full response (NO streaming)
+                # single full response
                 await websocket.send_json({
                     "request_id": request_id,
                     "text": result["response"],

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from ollama import chat
 import time
 
+#gemma4 service to run on a VM supported by GPU.
 app = FastAPI()
 
 
@@ -18,7 +19,7 @@ def run_gemma(prompt: str):
         messages=[
             {"role": "user", "content": prompt}
         ],
-        stream=False  # IMPORTANT: non-streaming
+        stream=False
     )
 
     end = time.time()

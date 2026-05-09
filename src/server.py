@@ -8,9 +8,7 @@ import threading
 from src.ws import safe_send, responses, responses_lock, init_ws
 from src.tts_service import generate_tts_audio
 
-# -----------------------------
-# INIT
-# -----------------------------
+#Initialize the websocket.
 init_ws()
 
 app = Flask(__name__)
@@ -18,18 +16,12 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
 
-
-# -----------------------------
-# WEB PAGE
-# -----------------------------
+#webpage
 @app.route("/")
 def index():
     return render_template("index.html")
 
-
-# -----------------------------
-# MAIN API
-# -----------------------------
+#main API
 @app.route("/select", methods=["POST"])
 def select():
     data = request.get_json()
@@ -37,17 +29,13 @@ def select():
     intent = data.get("intent")
     request_id = str(uuid.uuid4())
 
-    # -----------------------------
-    # SEND TO VM (SAFE)
-    # -----------------------------
+    #send the request to gemma4 on the VM
     safe_send(json.dumps({
         "request_id": request_id,
         "intent": intent
     }))
 
-    # -----------------------------
-    # WAIT FOR RESPONSE (thread-safe)
-    # -----------------------------
+    #wait for the response
     timeout = 120
     start = time.time()
 
@@ -63,25 +51,14 @@ def select():
     if result is None:
         return jsonify({"error": "VM timeout"}), 504
 
-    # -----------------------------
-    # TTS GENERATION
-    # -----------------------------
-    audio_file = generate_tts_audio(result["text"])
-    audio_file.seek(0)
+    #Text to speech generation.
+    #For now the TTS is done on the server, which is not the right way. should return the audio files to the webpage for scalability
+    generate_tts_audio(result["text"])
+    
 
-    # -----------------------------
-    # RETURN AUDIO
-    # -----------------------------
-    return send_file(
-        audio_file,
-        mimetype="audio/wav",
-        as_attachment=False
-    )
-
-
-# -----------------------------
-# GAZE TRACKING (SocketIO)
-# -----------------------------
+#Gaze Tracker
+#Connection between the gaze detection file and the webpage.
+#this socket helps in  communicating the gaze data to the webpage.
 @socketio.on("gaze_data")
 def handle_gaze(data):
     x = data.get("x")
@@ -94,9 +71,5 @@ def handle_gaze(data):
         "y": y
     })
 
-
-# -----------------------------
-# RUN SERVER
-# -----------------------------
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5050, debug=True)

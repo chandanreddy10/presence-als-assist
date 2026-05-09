@@ -3,6 +3,7 @@ import json
 import threading
 import time
 
+#The VM URL
 VM_WS_URL = "ws://34.138.64.133:8000/ws"
 
 ws = None
