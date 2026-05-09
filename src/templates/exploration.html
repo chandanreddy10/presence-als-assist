@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        html, body {
+        margin: 0;
+        padding: 0;
+        }
+        body {
+            font-family: 'Atkinson Hyperlegible Next', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 1000, 'GRAD' 0, 'opsz' 60;
+        }
+    </style>
+<style>
+  #app {
+    width: 2100px;
+    height: 1000px;;
+    transform-origin: top left;
+    transform: scale(0.92);
+  }
+</style>
+
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#97b4cf",
+                      "primary-container": "#8bbab4",
+                      "on-tertiary-fixed": "#001e31",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#bcece5",
+                      "surface": "#fbf9f8",
+                      "primary": "#386661",
+                      "surface-container-low": "#f6f3f2",
+                      "surface-variant": "#e4e2e1",
+                      "on-surface": "#1b1c1c",
+                      "on-secondary-container": "#625d7d",
+                      "inverse-on-surface": "#f3f0f0",
+                      "outline": "#707977",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#386661",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#404847",
+                      "on-tertiary-container": "#29465d",
+                      "surface-container-lowest": "#ffffff",
+                      "background": "#fbf9f8",
+                      "tertiary-fixed-dim": "#adcae5",
+                      "tertiary": "#456179",
+                      "secondary-container": "#dfd8fe",
+                      "surface-dim": "#dcd9d9",
+                      "on-primary": "#ffffff",
+                      "secondary": "#5f5b7a",
+                      "surface-container-high": "#eae8e7",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-primary-fixed": "#00201d",
+                      "on-primary-fixed-variant": "#1f4e4a",
+                      "secondary-fixed": "#e5deff",
+                      "tertiary-fixed": "#cbe6ff",
+                      "surface-container": "#f0eded",
+                      "inverse-primary": "#a0d0c9",
+                      "on-tertiary-fixed-variant": "#2d4960",
+                      "surface-bright": "#fbf9f8",
+                      "primary-fixed-dim": "#a0d0c9",
+                      "inverse-surface": "#303030",
+                      "on-error": "#ffffff",
+                      "outline-variant": "#c0c8c6",
+                      "on-secondary-fixed-variant": "#474361",
+                      "secondary-fixed-dim": "#c9c2e6",
+                      "on-primary-container": "#1b4b47",
+                      "on-secondary-fixed": "#1c1833",
+                      "on-background": "#1b1c1c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "min_target": "120px",
+                      "safe_zone": "80px",
+                      "margin": "64px",
+                      "gutter": "40px"
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="mesh-bg ...">
+  <div id="app">
+    
+<body class="bg-surface text-on-surface overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface shadow-[0_40px_40px_rgba(51,51,51,0.04)] px-margin py-8 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="text-headline-md font-headline-md font-bold text-primary">Presence</span>
+<span class="text-body-lg font-body-lg text-outline ml-4">I'm Curious</span>
+</div>
+<div class="flex items-center gap-gutter">
+<!-- Safe-Exit Trigger: Soft Sky Blue Distinguishable Action -->
+<button class="flex items-center gap-3 bg-tertiary-container text-on-tertiary-container px-8 py-4 rounded-lg hover:scale-[1.02] transition-all border-4 border-transparent active:ring-4 active:ring-tertiary/20 min-w-[200px] justify-center">
+<span class="material-symbols-outlined text-3xl">close</span>
+<a href="home.html" class="block">
+<span class="text-label-lg font-label-lg">Close Exploration</span>
+</a>
+
+</button>
+</div>
+</header>
+<main class="pt-[160px] pb-[200px] px-margin max-w-[1440px] mx-auto min-h-screen">
+<!-- Large Central Query Area (Output Display Area) -->
+<section class="mb-gutter">
+<div class="bg-surface-container-low rounded-xl p-12 shadow-inner border border-white/40 min-h-[240px] flex items-center justify-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-50"></div>
+<div class="relative z-10 w-full text-center">
+<p class="text-display-lg font-display-lg text-outline-variant italic">Ask me anything...</p>
+</div>
+<!-- Visual dwell indicator simulation -->
+<div class="absolute bottom-4 right-4 flex items-center gap-2 text-primary/60">
+<span class="material-symbols-outlined animate-pulse">visibility</span>
+<span class="text-label-lg font-label-lg uppercase tracking-widest">Gaze Focus Active</span>
+</div>
+</div>
+</section>
+<!-- Topic Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Tell a story (Large Tile) -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container rounded-xl p-20 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Tell a story</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Let's create an imaginative tale together.</p>
+</button>
+<!-- Explain the news -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container rounded-xl p-12 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-primary-container rounded-full flex items-center justify-center text-on-primary-container shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">newspaper</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Explain the news</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Current events broken down simply.</p>
+</button>
+<!-- Research topic -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container rounded-xl p-12 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-tertiary-container rounded-full flex items-center justify-center text-on-tertiary-container shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">travel_explore</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Research topic</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Deep dive into any subject of interest.</p>
+</button>
+<!-- Creative Prompt -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container-low rounded-xl p-12 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-secondary-fixed rounded-full flex items-center justify-center text-on-secondary-fixed-variant shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Give me ideas</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Get inspiration for hobbies or daily life.</p>
+</button>
+<!-- Facts & Figures -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container-low rounded-xl p-12 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-primary-fixed rounded-full flex items-center justify-center text-on-primary-fixed-variant shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">calculate</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Quick Facts</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Fast answers to specific questions.</p>
+</button>
+<!-- Personal History / Memory -->
+<button class="group relative flex flex-col items-center justify-center gap-6 bg-surface-container-low rounded-xl p-12 min-h-[320px] shadow-[0_40px_40px_rgba(51,51,51,0.04)] border border-white hover:scale-[1.02] transition-all hover:backdrop-blur-xl">
+<div class="w-[120px] h-[120px] bg-tertiary-fixed rounded-full flex items-center justify-center text-on-tertiary-fixed-variant shadow-sm group-hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</div>
+<span class="text-headline-md font-headline-md text-on-surface">Memory Journal</span>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[240px] text-center">Relive memories or record thoughts.</p>
+</button>
+</section>
+<!-- Visual Contextual Illustration (Glassmorphism Art) -->
+<section class="mt-safe_zone grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-7 bg-white/20 backdrop-blur-xl rounded-xl p-12 border border-white/30 shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
+<h2 class="text-headline-lg font-headline-lg text-primary mb-6">Discovery is Endless</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant leading-relaxed">
+                    The exploration mode is designed to let your mind wander and grow. Whether you are seeking information or inspiration, Lumina adapts to your pace, providing clarity through soft visual cues and accessible reasoning tools.
+                </p>
+</div>
+<div class="md:col-span-5 aspect-square rounded-xl overflow-hidden shadow-2xl relative">
+<img class="w-full h-full object-cover grayscale-[20%] brightness-110" data-alt="A serene and dreamlike digital art composition showing a person silhouetted against a vast, glowing cosmic nebula. The color palette is composed of soft lavender, deep teal, and celestial white. The scene is peaceful and infinite, reflecting a mood of deep intellectual curiosity and emotional safety. The lighting is ethereal and diffused, perfectly aligning with a soft-minimalist, high-readability design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPYF3Hj9Y4Fik434J7EVXP5simybogg7vJM1AVQXyjNlbf5OhcQv1tZbROK0jyHD5PzplsTICEJgjmWfY4nNDR8cjYCec2aLYo-Cw1zS7B7RznH9ecPB8lhkiN7aj9fWS57BY44lbVizzDpKRXE-4Z9zspuhfi5XpoR38pDsBaY436QPjpXEL10pczYGT5vQzvQ6fcXRPjLDJBLBbG9IG2bfH3hjqb0_kZ11cTrkTUil5lt57L8_kGyELilMPtho0vbmkh811Hyig"/>
+<div class="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Home Focused) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/20 flex justify-center items-center px-margin py-8 min-h-[160px] shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
+<div class="flex gap-gutter w-full max-w-[800px] justify-center">
+<!-- ACTIVE: Home -->
+<button class="flex flex-col items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-lg px-margin py-6 scale-[1.05] ring-8 ring-tertiary/10 transition-all duration-500 min-w-[240px]">
+<span class="material-symbols-outlined text-4xl mb-2" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-label-lg font-label-lg">Home</span>
+</button>
+<!-- Emergency -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all min-w-[240px]">
+<span class="material-symbols-outlined text-4xl mb-2">emergency_share</span>
+<span class="text-label-lg font-label-lg text-error">Emergency</span>
+</button>
+</div>
+</nav>
+</body>
+</div>
+</body></html>

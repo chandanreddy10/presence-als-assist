@@ -342,7 +342,7 @@ if PRINT_DATA:
 #     min_detection_confidence=MIN_DETECTION_CONFIDENCE,
 #     min_tracking_confidence=MIN_TRACKING_CONFIDENCE,
 # )
-MODEL_PATH = "face_landmarker_v2_with_blendshapes.task"
+MODEL_PATH = "C:\\Users\\chand\\Documents\\ProjectGemma4\\utils\\face_landmarker_v2_with_blendshapes.task"
 base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
 options = vision.FaceLandmarkerOptions(
     base_options=base_options,

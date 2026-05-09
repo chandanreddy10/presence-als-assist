@@ -5,8 +5,8 @@ import uuid
 import json
 import threading
 
-from src.ws import safe_send, responses, responses_lock, init_ws
-from src.tts_service import generate_tts_audio
+from ws import safe_send, responses, responses_lock, init_ws
+from tts_service import generate_tts_audio
 
 #Initialize the websocket.
 init_ws()
@@ -19,7 +19,7 @@ lock = threading.Lock()
 #webpage
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
 
 #main API
 @app.route("/select", methods=["POST"])
