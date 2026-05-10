@@ -114,6 +114,23 @@ def handle_phrase(data):
         "phrases": result
     }, to=request.sid)
 
+@socketio.on("select_text")
+def handle_select_text(data):
+    """
+    Receives gaze-selected text from frontend
+    """
+
+    text = (data.get("text") or "").strip()
+    if "Pain" in text:
+        generate_tts_audio("I am feeling Pain.")
+    elif "Position" in text:
+        generate_tts_audio("I have a problem with my seating position.")
+    elif "Breathing" in text:
+        generate_tts_audio("I cannot breathe properly !")
+    elif "Thirst" in text:
+        generate_tts_audio("I am thirsty !")
+    elif "Medication" in text:
+        generate_tts_audio("I need to take my medication.")
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.

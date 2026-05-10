@@ -5,7 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-<script src="../static/gaze.js"></script>
+<script src=../static/gaze_intent.js></script>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -131,7 +131,7 @@
   <div id="app">
 <body class="bg-surface text-on-surface font-body-md min-h-screen selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
 <!-- Top Navigation Bar -->
-<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
+<header class="gaze-target fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)]" data-href="./home.html">
 <div class="flex items-center gap-4">
 <span class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Presence</span>
 </div>
@@ -182,7 +182,7 @@
 <!-- Asymmetric Bento-style Intent Grid -->
 <div class="grid grid-cols-4 grid-rows-2 gap-gutter px-margin h-[calc(100%-160px)]">
 <!-- Pain: Primary Large Node -->
-<div class="col-span-2 row-span-2 gaze-target glass-card rounded-xl p-12 flex flex-col items-center justify-center text-center cursor-pointer group">
+<div class="gaze-target col-span-2 row-span-2 glass-card rounded-xl p-12 flex flex-col items-center justify-center text-center cursor-pointer group">
 <div class="w-40 h-40 bg-error-container text-on-error-container rounded-full flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 transition-transform">
 <span class="material-symbols-outlined text-[80px]" data-icon="bolt">bolt</span>
 </div>
@@ -193,28 +193,28 @@
 </div>
 </div>
 <!-- Position -->
-<div class="col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
+<div class="gaze-target col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
 <div class="w-24 h-24 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
 <span class="material-symbols-outlined text-[48px]" data-icon="airline_seat_recline_extra">airline_seat_recline_extra</span>
 </div>
 <h3 class="text-headline-md font-headline-md text-on-surface">Position</h3>
 </div>
 <!-- Breathing -->
-<div class="col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
+<div class=" gaze-target col-span-1 row-span-1 glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
 <div class="w-24 h-24 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
 <span class="material-symbols-outlined text-[48px]" data-icon="air">air</span>
 </div>
 <h3 class="text-headline-md font-headline-md text-on-surface">Breathing</h3>
 </div>
 <!-- Thirst -->
-<div class="col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
-<div class="w-24 h-24 bg-primary-container/40 text-primary rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+<div class="gaze-target col-span-1 row-span-1 glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
+<div class=" w-24 h-24 bg-primary-container/40 text-primary rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
 <span class="material-symbols-outlined text-[48px]" data-icon="water_drop">water_drop</span>
 </div>
 <h3 class="text-headline-md font-headline-md text-on-surface">Thirst</h3>
 </div>
 <!-- Medication -->
-<div class="col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
+<div class="gaze-target col-span-1 row-span-1 gaze-target glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer group">
 <div class="w-24 h-24 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
 <span class="material-symbols-outlined text-[48px]" data-icon="pill">pill</span>
 </div>
@@ -223,9 +223,9 @@
 </div>
 </main>
 <!-- Bottom Action Bar / Shell Navigation -->
-<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 backdrop-blur-xl rounded-t-xl shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 backdrop-blur-xl rounded-t-xl shadow-[0_-40px_40px_rgba(51,51,51,0.04)]" >
 <div class="flex items-center gap-12">
-<button class="gaze-target flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all rounded-lg">
+<button class="gaze-target flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all rounded-lg" data-href="./home.html">
 <span class="material-symbols-outlined text-[40px]" data-icon="home">home</span>
 <span class="text-label-lg font-label-lg">Home</span>
 </button>
