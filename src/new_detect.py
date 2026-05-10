@@ -22,7 +22,7 @@ sio.connect("http://127.0.0.1:5050")
 
 print("Connected to Flask")
 
-screen_w, screen_h = 960, 780
+screen_w, screen_h = 1920, 1200
 pyautogui.FAILSAFE = False
 
 smooth_x, smooth_y = 0, 0

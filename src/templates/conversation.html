@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -135,78 +136,71 @@
 <div class="pointer-events-auto group">
 <button class="gaze-target min-w-min_target min-h-min_target bg-tertiary-fixed text-on-tertiary-fixed rounded-xl flex flex-col items-center justify-center gap-2 shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
     <a href="home.html" class="block">
-  <span class="material-symbols-outlined text-display-lg" data-icon="home">home</span>
+  <span class="material-symbols-outlined text-6xl" data-icon="home">home</span>
 </a>
-<span class="font-label-lg text-label-lg">Home</span>
 </button>
 </div>
 <div class="pointer-events-auto flex gap-gutter">
 <button class="gaze-target min-w-min_target min-h-min_target bg-surface-container-high text-on-surface-variant rounded-xl flex flex-col items-center justify-center gap-2 shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
-<span class="material-symbols-outlined text-display-lg" data-icon="history">history</span>
-<span class="font-label-lg text-label-lg">Recent</span>
+<span class="material-symbols-outlined text-3xl" data-icon="history">history</span>
+<span class="font-label-lg text-2xl">Recent</span>
 </button>
 <button class="gaze-target min-w-min_target min-h-min_target bg-tertiary-container text-on-tertiary-container rounded-xl flex flex-col items-center justify-center gap-2 shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
-<span class="material-symbols-outlined text-display-lg" data-icon="emergency_share">emergency_share</span>
-<span class="font-label-lg text-label-lg">Emergency</span>
+<span class="material-symbols-outlined text-6xl" data-icon="emergency_share">emergency_share</span>
 </button>
 </div>
 </header>
 <!-- Main Workspace / Word Cloud Section -->
 <main class="relative w-full h-screen px-margin pt-[160px] pb-[280px] flex flex-col items-center justify-center">
 <div class="w-full max-w-7xl h-full relative">
+<div id="phrase-container" class="grid grid-cols-3 gap-8 p-8"></div>
 <!-- Asymmetric Cloud Layout -->
 <!-- I feel (Primary Node) -->
-<button class="gaze-target absolute top-[5%] left-[35%] w-[280px] h-[140px] bg-primary-container text-on-primary-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute top-[5%] left-[35%] w-[280px] h-[140px] bg-primary-container text-on-primary-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">I feel</span>
-</button>
+</button> -->
 <!-- Need (Focus Node) -->
-<button class="gaze-target absolute top-[25%] left-[5%] w-[220px] h-[160px] bg-tertiary-fixed text-on-tertiary-fixed rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute top-[25%] left-[5%] w-[220px] h-[160px] bg-tertiary-fixed text-on-tertiary-fixed rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Need</span>
-</button>
+</button> -->
 <!-- Help (Urgent Node) -->
-<button class="gaze-target absolute top-[10%] right-[10%] w-[240px] h-[180px] bg-error-container text-on-error-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex flex-col items-center justify-center gap-2 border border-white/40">
+<!-- <button class="gaze-target absolute top-[10%] right-[10%] w-[240px] h-[180px] bg-error-container text-on-error-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex flex-col items-center justify-center gap-2 border border-white/40">
 <span class="material-symbols-outlined" data-icon="warning">warning</span>
 <span class="font-headline-md text-headline-md">Help</span>
-</button>
+</button> -->
 <!-- Water (Object Node) -->
-<button class="gaze-target absolute bottom-[30%] left-[25%] w-[200px] h-[120px] bg-surface-container-highest text-on-surface rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute bottom-[30%] left-[25%] w-[200px] h-[120px] bg-surface-container-highest text-on-surface rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Water</span>
-</button>
+</button> -->
 <!-- Hungry (State Node) -->
-<button class="gaze-target absolute top-[40%] right-[30%] w-[240px] h-[140px] bg-secondary-container text-on-secondary-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute top-[40%] right-[30%] w-[240px] h-[140px] bg-secondary-container text-on-secondary-container rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Hungry</span>
-</button>
+</button> -->
 <!-- Thank you (Social Node) -->
-<button class="gaze-target absolute bottom-[10%] right-[15%] w-[260px] h-[160px] bg-primary text-on-primary rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute bottom-[10%] right-[15%] w-[260px] h-[160px] bg-primary text-on-primary rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Thank you</span>
-</button>
+</button> -->
 <!-- Tired (State Node) -->
-<button class="gaze-target absolute bottom-[45%] left-[55%] w-[180px] h-[120px] bg-surface-container text-on-surface-variant rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute bottom-[45%] left-[55%] w-[180px] h-[120px] bg-surface-container text-on-surface-variant rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Tired</span>
-</button>
+</button> -->
 <!-- Love (Emotional Node) -->
-<button class="gaze-target absolute top-[50%] left-[10%] w-[200px] h-[150px] bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
+<!-- <button class="gaze-target absolute top-[50%] left-[10%] w-[200px] h-[150px] bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg shadow-[0_40px_40px_rgba(51,51,51,0.04)] flex items-center justify-center border border-white/40">
 <span class="font-headline-md text-headline-md">Love</span>
-</button>
+</button> -->
 <!-- Decorative Visual: Soft Background Glow -->
 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 blur-[120px] opacity-20 bg-gradient-to-tr from-primary via-tertiary to-secondary pointer-events-none"></div>
 </div>
 </main>
+<div id="sentence-bar" class="flex flex-wrap gap-8 p-6 translate-y-[-100px]"></div>
 <!-- Bottom Response Panel (The "Output Display" mandated in guidelines) -->
-<section class="fixed bottom-0 left-0 w-full p-8 z-50">
-<div class="max-w-7xl mx-auto bg-surface/80 backdrop-blur-xl rounded-xl shadow-[0_-40px_40px_rgba(51,51,51,0.04)] border border-white/20 p-8 min-h-[220px] flex items-center gap-gutter">
-<!-- Output Area -->
-<div class="flex-grow bg-surface-container-low rounded-lg p-6 border-inner shadow-inner border-outline-variant/20">
-<p class="text-display-lg font-display-lg text-primary flex items-center gap-4">
-<span>I feel</span>
-<span class="w-1 h-12 bg-primary/40 animate-pulse"></span>
-</p>
-</div>
-</section>
 <!-- Background Image (Calm, Supportive Aesthetic) -->
 <div class="fixed inset-0 -z-20 opacity-30 pointer-events-none">
 <img alt="Supportive environment" class="w-full h-full object-cover" data-alt="A peaceful and minimalist interior space with large windows letting in soft, natural daylight. The room is decorated in muted sage green and warm cream tones, featuring smooth, rounded architectural elements and lush indoor plants. The atmosphere is quiet, serene, and supportive, reflecting a modern light-mode design aesthetic with high-key lighting and extremely soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKNDrymNunkLF8-N1H32KqtecG2lUaz8zpKe6aMZd0Wcqsg7elxTgdaPEeTv-xiDOhfaHG00gGGQqJQ1RN0mAvCt_RMRVu1QQJhTM6cuE4Q8vRKqfFPiqIMC19HLnQlvqP1iF_GzGhiAHkb3d9I-kCjGrnjdLTlQsg0LgWQ6yLT0R5OuNeTv-HI17OBZewFAZOuuF7qwNgnoovDUHC7Xw47mSDHMShaYQlfpLQ1vrCTosMpLns6_YK3JOEPhOgX8P_Pc70EH6yoCg"/>
 </div>
 </body>
 </div>
+<script src="../static/socket.js"></script>
+<script src="../static/gaze_conv.js"></script>
+<script src="../static/gaze_chat.js"></script>
 </body></html>

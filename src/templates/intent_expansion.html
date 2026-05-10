@@ -4,6 +4,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="../static/gaze.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -131,7 +133,7 @@
 <!-- Top Navigation Bar -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)]">
 <div class="flex items-center gap-4">
-<span class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Lumina</span>
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Presence</span>
 </div>
 <div class="flex gap-10">
 <button class="gaze-target min-w-[120px] min-h-[60px] flex items-center justify-center gap-2 text-primary border-b-4 border-primary font-label-lg text-label-lg">
@@ -139,8 +141,6 @@
                 Medical Intent
             </button>
 <button class="gaze-target min-w-[120px] min-h-[60px] flex items-center justify-center gap-2 text-outline font-label-lg text-label-lg hover:text-primary">
-<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
-                Social
             </button>
 </div>
 <button class="gaze-target flex items-center justify-center w-[80px] h-[80px] bg-tertiary-container/20 rounded-full text-tertiary transition-all">
@@ -154,18 +154,18 @@
 <p class="text-on-surface-variant opacity-70">Ready to assist</p>
 </div>
 <nav class="flex flex-col gap-2">
-<div class="flex items-center gap-gutter bg-primary-container text-on-primary-container rounded-lg p-6 m-4 shadow-[0_0_20px_rgba(139,186,180,0.2)] scale-[1.02]">
+<!-- <div class="flex items-center gap-gutter bg-primary-container text-on-primary-container rounded-lg p-6 m-4 shadow-[0_0_20px_rgba(139,186,180,0.2)] scale-[1.02]">
 <span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
 <span class="text-label-lg font-label-lg">Speak</span>
-</div>
+</div> -->
 <div class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
 <span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
 <span class="text-label-lg font-label-lg">Phrases</span>
 </div>
-<div class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
+<!-- <div class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
 <span class="material-symbols-outlined" data-icon="accessibility_new">accessibility_new</span>
 <span class="text-label-lg font-label-lg">Needs</span>
-</div>
+</div> -->
 <div class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
 <span class="text-label-lg font-label-lg">Settings</span>
@@ -177,7 +177,7 @@
 <!-- Header Section -->
 <div class="px-margin mb-8">
 <h1 class="text-display-lg font-display-lg text-primary mb-2">Medical Assistance</h1>
-<p class="text-body-lg font-body-lg text-on-surface-variant">Focus gaze to select a sub-category</p>
+<!-- <p class="text-body-lg font-body-lg text-on-surface-variant">Focus gaze to select a sub-category</p> -->
 </div>
 <!-- Asymmetric Bento-style Intent Grid -->
 <div class="grid grid-cols-4 grid-rows-2 gap-gutter px-margin h-[calc(100%-160px)]">
@@ -235,9 +235,9 @@
 </button>
 </div>
 <div class="flex-1 flex justify-center">
-<div class="w-[400px] bg-surface-container-highest/50 p-6 rounded-xl border border-outline/10 text-center">
+<!-- <div class="w-[400px] bg-surface-container-highest/50 p-6 rounded-xl border border-outline/10 text-center">
 <p class="text-label-lg font-label-lg text-outline italic">Select a medical node to speak</p>
-</div>
+</div> -->
 </div>
 <button class="gaze-target min-w-[120px] min-h-[120px] bg-tertiary-container/30 text-tertiary rounded-full flex flex-col items-center justify-center gap-2 border-4 border-tertiary/20">
 <span class="material-symbols-outlined text-[48px]" data-icon="arrow_back">arrow_back</span>

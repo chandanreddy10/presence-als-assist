@@ -169,28 +169,27 @@
 <!-- Main Content Canvas -->
 <main class="flex-grow flex flex-col items-center justify-center px-margin relative">
 <!-- Intent Cloud (Central Element) -->
-<div class="relative w-full max-w-[1200px] h-[520px] flex items-center justify-center gap-12">
+<div class=" w-full max-w-[1200px] h-[520px] flex items-center justify-center gap-12">
 <!-- Medical Intent Node -->
-<div class="gaze-target intent-card flex flex-col items-center justify-center w-[440px] h-[440px] bg-gradient-to-br from-primary-container/40 to-primary-container/10 border border-white/60 backdrop-blur-2xl text-on-primary-container p-12 text-center premium-shadow cursor-pointer">
+<div class="gaze-target  intent-card flex flex-col items-center justify-center w-[440px] h-[440px] bg-gradient-to-br from-primary-container/40 to-primary-container/10 border border-white/60 backdrop-blur-2xl text-on-primary-container p-12 text-center premium-shadow cursor-pointer" data-href="intent_expansion.html">
 <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-8">
-<div class="gaze-target" data-href="intent_expansion.html">
-  <span class="material-symbols-outlined text-[56px] text-primary">
-    medical_services
-  </span>
-</div>
+<span class="material-symbols-outlined text-[56px] text-primary items-center">
+medical_services
+</span>
 </div>
 <h2 class="text-headline-lg font-headline-lg mb-4 text-on-primary-container">Medical Intent</h2>
 <p class="text-body-lg text-on-primary-container/70">Health, comfort &amp; needs</p>
 </div>
 <!-- General Intent Node -->
-<div class="gaze-target intent-card flex flex-col items-center justify-center w-[440px] h-[440px] bg-gradient-to-br from-secondary-container/40 to-secondary-container/10 border border-white/60 backdrop-blur-2xl text-on-secondary-container p-12 text-center premium-shadow cursor-pointer">
-<div class="w-24 h-24 bg-secondary/10 rounded-full flex items-center justify-center mb-8">
+<div class="gaze-target  intent-card flex flex-col items-center justify-center w-[440px] h-[440px] bg-gradient-to-br from-secondary-container/40 to-secondary-container/10 border border-white/60 backdrop-blur-2xl text-on-secondary-container p-12 text-center premium-shadow cursor-pointer" data-href="conversation.html">
+<div class="w-24 h-24 bg-secondary/10 rounded-full flex items-center justify-center mb-8" >
 <span class="material-symbols-outlined text-[56px] text-secondary" data-icon="forum">forum</span>
 </div>
 <h2 class="text-headline-lg font-headline-lg mb-4 text-on-secondary-container">General Intent</h2>
 <p class="text-body-lg text-on-secondary-container/70">Chat, social &amp; expression</p>
 </div>
 </div>
+
 <!-- Primary Actions Area -->
 <div class="w-full mt-12 flex justify-between items-end pb-margin max-w-[1200px]">
 <!-- Secondary Action: I'm Curious -->
@@ -210,13 +209,11 @@
 </div>
 <!-- Primary Action: Start Conversation -->
 <div class="w-[60%]">
-<button class="gaze-target w-full h-[220px] cta-button text-on-primary rounded-xl flex flex-col items-center justify-center gap-4 hover:scale-[1.02] transition-all group">
+<button class="gaze-target w-full h-[220px] cta-button text-on-primary rounded-xl flex flex-col items-center justify-center gap-4 hover:scale-[1.02] transition-all group" data-href="./conversation.html">
 <span class="material-symbols-outlined text-[72px] mb-2 transition-transform group-hover:scale-110" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
-<div class="gaze-target" data-href="conversation.html">
   <span class="text-display-lg font-display-lg">
     Start Conversation
   </span>
-</div>
 </button>
 </div>
 </div>
@@ -228,18 +225,18 @@
 <div class="h-1 w-12 bg-primary/20 mt-2 rounded-full"></div>
 </div>
 <div class="space-y-4 px-4">
-<div class="flex items-center gap-6 bg-primary/10 text-primary border border-primary/20 rounded-2xl p-6 transition-all cursor-pointer shadow-sm">
+<!-- <div class="flex items-center gap-6 bg-primary/10 text-primary border border-primary/20 rounded-2xl p-6 transition-all cursor-pointer shadow-sm">
 <span class="material-symbols-outlined text-[32px]" data-icon="chat_bubble">chat_bubble</span>
 <span class="text-label-lg font-label-lg">Speak</span>
-</div>
+</div> -->
 <div class="flex items-center gap-6 text-on-surface-variant/80 p-6 rounded-2xl hover:bg-white/40 transition-all cursor-pointer">
 <span class="material-symbols-outlined text-[32px]" data-icon="auto_awesome">auto_awesome</span>
 <span class="text-label-lg font-label-lg">Phrases</span>
 </div>
-<div class="flex items-center gap-6 text-on-surface-variant/80 p-6 rounded-2xl hover:bg-white/40 transition-all cursor-pointer">
+<!-- <div class="flex items-center gap-6 text-on-surface-variant/80 p-6 rounded-2xl hover:bg-white/40 transition-all cursor-pointer">
 <span class="material-symbols-outlined text-[32px]" data-icon="accessibility_new">accessibility_new</span>
 <span class="text-label-lg font-label-lg">Needs</span>
-</div>
+</div> -->
 <div class="flex items-center gap-6 text-on-surface-variant/80 p-6 rounded-2xl hover:bg-white/40 transition-all cursor-pointer mt-12">
 <span class="material-symbols-outlined text-[32px]" data-icon="settings">settings</span>
 <span class="text-label-lg font-label-lg">Settings</span>

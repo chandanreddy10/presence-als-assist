@@ -55,7 +55,42 @@ def select():
     #For now the TTS is done on the server, which is not the right way. should return the audio files to the webpage for scalability
     generate_tts_audio(result["text"])
     
+@socketio.on("phrase_selected")
+def handle_phrase(data):
+    phrase = data["phrase"]
 
+    # build new suggestions
+    new_phrases = ["success", phrase, "returned"] #generate_phrases(phrase)
+
+    # send to UI
+    socketio.emit("new_phrases", {
+        "phrases": new_phrases
+    })
+    # #send the request to gemma4 on the VM
+    # safe_send(json.dumps({
+    #     "request_id": request_id,
+    #     "intent": intent
+    # }))
+
+    # #wait for the response
+    # timeout = 120
+    # start = time.time()
+
+    # result = None
+
+    # while time.time() - start < timeout:
+    #     with responses_lock:
+    #         if request_id in responses:
+    #             result = responses.pop(request_id)
+    #             break
+    #     time.sleep(0.05)
+
+    # if result is None:
+    #     return jsonify({"error": "VM timeout"}), 504
+
+    # #Text to speech generation.
+    # #For now the TTS is done on the server, which is not the right way. should return the audio files to the webpage for scalability
+    # generate_tts_audio(result["text"])
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.
