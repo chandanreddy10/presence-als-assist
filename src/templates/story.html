@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html class="light" lang="en"><head>
+<html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Research Exploration Interface</title>
+<title>Story Mode</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -83,12 +83,12 @@
                         "headline-md": ["Atkinson Hyperlegible Next"]
                     },
                     "fontSize": {
-                        "headline-lg": ["40px", {"lineHeight": "52px", "letterSpacing": "0.01em", "fontWeight": "600"}],
-                        "body-lg": ["28px", {"lineHeight": "40px", "letterSpacing": "0.015em", "fontWeight": "400"}],
-                        "display-lg": ["48px", {"lineHeight": "64px", "letterSpacing": "0.02em", "fontWeight": "700"}],
-                        "label-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "0.03em", "fontWeight": "600"}],
-                        "body-md": ["24px", {"lineHeight": "36px", "letterSpacing": "0.015em", "fontWeight": "400"}],
-                        "headline-md": ["32px", {"lineHeight": "44px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                        "headline-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-lg": ["28px", { "lineHeight": "40px", "letterSpacing": "0.015em", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "64px", "letterSpacing": "0.02em", "fontWeight": "700" }],
+                        "label-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "0.03em", "fontWeight": "600" }],
+                        "body-md": ["24px", { "lineHeight": "36px", "letterSpacing": "0.015em", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "44px", "letterSpacing": "0.01em", "fontWeight": "600" }]
                     }
                 }
             }
@@ -96,166 +96,138 @@
     </script>
 <style>
         body {
-            /* Prevent scrolling on the body for gaze safety */
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            background: linear-gradient(135deg, #f0eded 0%, #dfd8fe 50%, #bcece5 100%);
+            overflow: hidden; /* Fixed viewport */
         }
         
-        /* Gaze Interaction Styles */
+        .glass-panel {
+            background: rgba(251, 249, 248, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 40px 40px rgba(51, 51, 51, 0.04);
+        }
+
         .gaze-target {
-            min-height: 120px;
-            min-width: 120px;
-            transition: all 0.3s ease;
+            transition: all 0.3s ease-out;
         }
         
         .gaze-target:hover {
             transform: scale(1.02);
             backdrop-filter: blur(12px);
-            box-shadow: 0 0 20px rgba(139, 186, 180, 0.2); /* primary color glow */
-        }
-        
-        /* Beveled soft edge for cards */
-        .soft-card {
-            box-shadow: 0 40px 40px rgba(51, 51, 51, 0.04), inset 0 0 0 1px #ffffff;
+            background: rgba(251, 249, 248, 0.9);
+            box-shadow: 0 0 20px rgba(139, 186, 180, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
-        /* Auto-scrolling panel hide scrollbar but allow vertical scroll */
-        .auto-scroll-panel {
-            overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* Internet Explorer 10+ */
+        /* Hide scrollbar for the story text container to make it look like a continuous stream */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .auto-scroll-panel::-webkit-scrollbar { 
-            width: 0;
-            height: 0;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="bg-background text-on-background flex h-screen w-screen overflow-hidden">
+<body class="h-screen w-screen text-on-surface flex font-body-md">
 <!-- SideNavBar (WEB) -->
-<nav class="hidden md:flex flex-col gap-gutter py-margin bg-surface-container-low dark:bg-surface-container-highest shadow-[40px_0_40px_rgba(51,51,51,0.04)] h-full w-[240px] z-40 relative">
+<nav class="hidden md:flex flex-col bg-surface-container-low dark:bg-surface-container-highest docked left-0 h-full w-[240px] shadow-[40px_0_40px_rgba(51,51,51,0.04)] fixed left-0 top-0 h-full flex flex-col gap-gutter py-margin z-50">
 <div class="px-6 mb-8">
-<h2 class="text-headline-md font-headline-md text-primary">Communication</h2>
-<p class="text-body-md font-body-md text-on-surface-variant">Ready to assist</p>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Presence</h1>
+<!-- <p class="text-on-surface-variant mt-2 text-label-lg font-label-lg">Communication</p> -->
 </div>
-<div class="flex-1 flex flex-col gap-4">
-<!-- Inactive -->
-<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
-<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<div class="flex-1 overflow-y-auto">
+<!-- Active state semantic match for storytelling might be 'Phrases' or generic activity, assuming it's an activity under Needs or a custom module, let's highlight generic communication or Speak if it's generating text. Let's use Speak as the active module for generating a story. -->
+<!-- <a class="flex items-center gap-gutter bg-primary-container text-on-primary-container rounded-lg p-6 m-4 hover:scale-[1.02] hover:bg-secondary-container/50 transition-all scale-[1.02] shadow-[0_0_20px_rgba(139,186,180,0.2)] gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
 <span class="text-label-lg font-label-lg">Speak</span>
-</button>
-<!-- Inactive -->
-<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
-<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+</a> -->
+<a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="auto_awesome">auto_awesome</span>
 <span class="text-label-lg font-label-lg">Phrases</span>
-</button>
-<!-- Inactive -->
-<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
-<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">accessibility_new</span>
+</a>
+<!-- <a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="accessibility_new">accessibility_new</span>
 <span class="text-label-lg font-label-lg">Needs</span>
-</button>
-<!-- Inactive -->
-<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
-<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">settings</span>
+</a> -->
+<a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="settings">settings</span>
 <span class="text-label-lg font-label-lg">Settings</span>
-</button>
+</a>
 </div>
 </nav>
-<!-- Main Content Area -->
-<main class="flex-1 flex flex-col h-full relative">
-<!-- TopAppBar (WEB) -->
-<header class="hidden md:flex justify-between items-center w-full px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)] z-30">
-<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Lumina</h1>
-<button class="gaze-target rounded-full p-4 hover:scale-[1.02] hover:backdrop-blur-xl transition-all duration-300 bg-surface-container flex items-center justify-center">
-<span class="material-symbols-outlined text-4xl text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">close</span>
+<!-- Main Content Canvas -->
+<main class="flex-1 h-full flex flex-col md:ml-[240px] pb-[160px] md:pb-0 relative z-10 px-margin py-margin gap-gutter box-border">
+<!-- TopAppBar (WEB - though usually top nav, we integrate title here as part of canvas when sidenav is present) -->
+<header class="flex justify-between items-center w-full px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)] rounded-xl glass-panel mb-8">
+<h2 class="text-headline-lg font-headline-lg text-primary dark:text-primary-fixed">Story Mode</h2>
+<button class="gaze-target min-w-min_target min-h-min_target flex items-center justify-center bg-error-container text-on-error-container rounded-lg px-8 py-4">
+<span class="material-symbols-outlined text-5xl mr-4" data-icon="close">close</span>
+<span class="text-label-lg font-label-lg">Exit Story</span>
 </button>
 </header>
-<!-- Canvas Area -->
-<div class="flex-1 flex flex-col px-margin py-8 gap-gutter overflow-hidden">
-<!-- Top Section: Research Topics -->
-<div class="flex gap-gutter w-full">
-<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
-<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">science</span>
-<span class="text-headline-md font-headline-md text-on-surface">Science</span>
+<!-- Top Section: Genre Selection -->
+<section class="flex gap-gutter w-full min-h-[160px]">
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target border-b-4 border-primary bg-primary-container/20">
+<span class="material-symbols-outlined text-5xl mb-2 text-primary" data-icon="rocket_launch">rocket_launch</span>
+<span class="text-headline-md font-headline-md text-primary">Sci-Fi</span>
 </button>
-<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
-<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">history_edu</span>
-<span class="text-headline-md font-headline-md text-on-surface">History</span>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-secondary" data-icon="history_edu">history_edu</span>
+<span class="text-headline-md font-headline-md text-on-surface">Historical</span>
 </button>
-<!-- Active Topic Example -->
-<button class="flex-1 gaze-target soft-card bg-primary-container text-on-primary-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group ring-4 ring-primary/20 scale-[1.02]">
-<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">palette</span>
-<span class="text-headline-md font-headline-md">Art</span>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-tertiary" data-icon="favorite">favorite</span>
+<span class="text-headline-md font-headline-md text-on-surface">Romance</span>
 </button>
-<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
-<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">memory</span>
-<span class="text-headline-md font-headline-md text-on-surface">Technology</span>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-on-surface-variant" data-icon="castle">castle</span>
+<span class="text-headline-md font-headline-md text-on-surface">Fantasy</span>
 </button>
-</div>
-<!-- Middle Section: Information Panel -->
-<div class="flex-1 soft-card bg-surface-container-low rounded-xl p-8 flex flex-col gap-6 auto-scroll-panel relative">
-<div class="sticky top-0 bg-surface-container-low pb-4 z-10 border-b border-outline-variant/30 flex justify-between items-center">
-<h2 class="text-display-lg font-display-lg text-on-surface">Impressionism</h2>
-<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">volume_up</span>
-</div>
-<div class="flex flex-col gap-8 text-body-lg font-body-lg text-on-surface-variant max-w-5xl">
-<p>
-                        Impressionism is a 19th-century art movement characterized by relatively small, thin, yet visible brush strokes, open composition, emphasis on accurate depiction of light in its changing qualities.
-                    </p>
-<div class="w-full h-64 rounded-lg bg-surface-container overflow-hidden soft-card">
-<img alt="A beautiful impressionist painting" class="w-full h-full object-cover" data-alt="A high-quality digital reproduction of an impressionist-style landscape painting. The artwork features soft, visible brushstrokes depicting a serene garden scene with a small pond. The lighting is bright and dappled, capturing the essence of early morning sunlight filtering through trees. The color palette is composed of soft teals, lavender, and muted greens, aligning perfectly with a calm, light-mode assistive interface aesthetic. The overall mood is tranquil, reflective, and culturally rich." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqGo8pfjU44VeWHQpDAa26MbnY-BSH4TlQKyN3SFoy8_PXciBCqyNSMBWEo00Tp22JwHr4L2F-iXvGGjvLWHLzRrgtXn0pk17OX5xw3W-XdMfBPxfQ1EBOFzThPmzvAMHuxQxr3qWTd26oVd9dDGOasJJZp6bVdCZsM3B_zZob1uQLJl2w-OgAv7WgD4eI1Pr-p3Kan0ukmo7JMTLN_P0edLiM6HzFYuDLfkF4FGslzpewLOGzFyFm-NLqbDwtvE8RI26XCMAvJxY"/>
-</div>
-<p>
-                        Originating with a group of Paris-based artists whose independent exhibitions brought them to prominence during the 1870s and 1880s, the movement faced harsh opposition from the conventional art community in France.
-                    </p>
-<p class="text-primary font-semibold">
-                        Key figures included Claude Monet, Edgar Degas, and Pierre-Auguste Renoir.
-                    </p>
-</div>
-<!-- Fade out at bottom to suggest more content -->
-<div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface-container-low to-transparent pointer-events-none"></div>
-</div>
-<!-- Bottom Section: Follow-up Questions Grid -->
-<div class="grid grid-cols-2 gap-gutter h-[320px]">
-<button class="gaze-target soft-card bg-secondary-container text-on-secondary-container rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-secondary-container/80 transition-all text-left">
-<div class="p-4 bg-surface rounded-full flex-shrink-0">
-<span class="material-symbols-outlined text-4xl text-secondary" style="font-variation-settings: 'FILL' 0;">help</span>
-</div>
-<span class="text-headline-md font-headline-md">Who were the main artists?</span>
+</section>
+<!-- Middle Section: Story Stream Container -->
+<!-- <section class="flex-1 glass-panel rounded-xl p-12 overflow-y-auto no-scrollbar relative shadow-inner">
+<div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-surface/80 to-transparent z-10 pointer-events-none rounded-t-xl"></div>
+<div class="flex flex-col justify-end min-h-full pb-8"> -->
+<!-- Oldest text (fading out) -->
+<!-- <p class="text-body-lg font-body-lg text-on-surface-variant/40 mb-8">
+                    The metallic hum of the starship's engines vibrated through the floorboards. Captain Elara checked the navigation console, a sense of unease settling over her as the coordinates refused to lock.
+                </p>
+<p class="text-body-lg font-body-lg text-on-surface-variant/70 mb-8">
+                    "Sensors indicate a massive anomaly dead ahead," Jax announced, his hands flying across the control panel. "It's pulling us in."
+                </p> -->
+<!-- Newest, active text -->
+<!-- <p class="text-display-lg font-display-lg text-on-surface leading-tight">
+                    Before she could order evasive maneuvers, the viewing screen filled with blinding, kaleidoscopic light. The ship lurched violently, and a strange, crystalline structure materialized from the void, hovering ominously in their path.
+                </p>
+</div> -->
+<!-- <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface/80 to-transparent z-10 pointer-events-none rounded-b-xl"></div>
+</section> -->
+<!-- Bottom Section: Choice Cards -->
+<section class="flex gap-gutter w-full mt-4 min-h-[200px]">
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 1</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Attempt to communicate with the structure</span>
 </button>
-<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
-<div class="p-4 bg-surface rounded-full flex-shrink-0">
-<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
-</div>
-<span class="text-headline-md font-headline-md">Why was it controversial?</span>
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 2</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Reverse thrusters and try to break free</span>
 </button>
-<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
-<div class="p-4 bg-surface rounded-full flex-shrink-0">
-<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
-</div>
-<span class="text-headline-md font-headline-md">Show me famous paintings</span>
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 3</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Scan the crystal for weak points</span>
 </button>
-<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
-<div class="p-4 bg-surface rounded-full flex-shrink-0">
-<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
-</div>
-<span class="text-headline-md font-headline-md">What came after Impressionism?</span>
-</button>
-</div>
-</div>
+</section>
 </main>
-<!-- BottomNavBar (MOBILE ONLY - Hidden on md and up) -->
-<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 dark:bg-on-background/80 rounded-t-xl backdrop-blur-xl border-t border-white/20 shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
-<!-- Active -->
-<button class="gaze-target flex flex-col items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-lg px-margin py-6 scale-[1.05] ring-8 ring-tertiary/10 transition-all duration-500">
-<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">home</span>
-<span class="text-label-lg font-label-lg mt-2">Home</span>
-</button>
-<!-- Inactive -->
-<button class="gaze-target flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all">
-<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 0;">emergency_share</span>
-<span class="text-label-lg font-label-lg mt-2">Emergency</span>
-</button>
+<!-- BottomNavBar (MOBILE) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 dark:bg-on-background/80 docked full-width bottom-0 rounded-t-xl backdrop-blur-xl border-t border-white/20 shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all gaze-target" href="#">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="home">home</span>
+<span class="text-label-lg font-label-lg">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-lg px-margin py-6 scale-[1.05] ring-8 ring-tertiary/10 transition-all duration-500 gaze-target" href="#">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="emergency_share">emergency_share</span>
+<span class="text-label-lg font-label-lg">Emergency</span>
+</a>
 </nav>
 </body></html>
