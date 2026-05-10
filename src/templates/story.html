@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Story Mode</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -161,14 +162,14 @@
 <!-- TopAppBar (WEB - though usually top nav, we integrate title here as part of canvas when sidenav is present) -->
 <header class="flex justify-between items-center w-full px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)] rounded-xl glass-panel mb-8">
 <h2 class="text-headline-lg font-headline-lg text-primary dark:text-primary-fixed">Story Mode</h2>
-<button class="gaze-target min-w-min_target min-h-min_target flex items-center justify-center bg-error-container text-on-error-container rounded-lg px-8 py-4">
+<button class="gaze-target min-w-min_target min-h-min_target flex items-center justify-center bg-error-container text-on-error-container rounded-lg px-8 py-4" data-href="./home.html">
 <span class="material-symbols-outlined text-5xl mr-4" data-icon="close">close</span>
 <span class="text-label-lg font-label-lg">Exit Story</span>
 </button>
 </header>
 <!-- Top Section: Genre Selection -->
 <section class="flex gap-gutter w-full min-h-[160px]">
-<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target border-b-4 border-primary bg-primary-container/20">
+<button class="gaze-target flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center border-b-4 border-primary bg-primary-container/20">
 <span class="material-symbols-outlined text-5xl mb-2 text-primary" data-icon="rocket_launch">rocket_launch</span>
 <span class="text-headline-md font-headline-md text-primary">Sci-Fi</span>
 </button>
@@ -230,4 +231,5 @@
 <span class="text-label-lg font-label-lg">Emergency</span>
 </a>
 </nav>
+<script src=../static/gaze_story.js></script>
 </body></html>

@@ -130,7 +130,57 @@ def handle_select_text(data):
     elif "Thirst" in text:
         generate_tts_audio("I am thirsty !")
     elif "Medication" in text:
-        generate_tts_audio("I need to take my medication.")
+        generate_tts_audio("I need to take my medication.") 
+
+@socketio.on("story_text")
+def handle_select_text(data):
+    """
+    Receives text from frontend
+    """
+
+    genre = data.get("text")
+    if not genre:
+        socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
+        return
+
+    request_id = str(uuid.uuid4())
+
+    # 🔹 Send request to VM
+    safe_send(json.dumps({
+        "request_id": request_id,
+        "text": genre,
+        "request":"story"
+    }))
+
+    # 🔹 Tell UI we're processing (important for gaze UX)
+    socketio.emit("loading", {"status": "processing"}, to=request.sid)
+
+    # 🔹 Wait for response (non-blocking style)
+    timeout = 120
+    start = time.time()
+
+    result = None
+
+    while time.time() - start < timeout:
+        socketio.sleep(0.05)  # ✅ IMPORTANT: non-blocking
+
+        with responses_lock:
+            if request_id in responses:
+                result = responses.pop(request_id)
+                break
+
+    # 🔴 Timeout case
+    if result is None:
+        socketio.emit("error", {
+            "message": "VM timeout"
+        }, to=request.sid)
+        return
+    # print(result["text"])
+    generate_tts_audio(result["text"], voice="not default")
+    # # 🟢 Success case
+    # socketio.emit("new_phrases", {
+    #     "phrases": result
+    # }, to=request.sid)
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.
