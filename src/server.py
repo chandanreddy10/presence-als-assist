@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO
 import time
 import uuid
@@ -21,24 +21,27 @@ lock = threading.Lock()
 def index():
     return render_template("home.html")
 
-#main API
-@app.route("/select", methods=["POST"])
-def select():
-    data = request.get_json()
+@socketio.on("sentence")
+def select(data):
+    intent = data.get("sentence")
+    intent = ",".join(intent)
+    print(intent)
+    if not intent:
+        socketio.emit("sentence_error", {"error": "Empty sentence"})
+        return
 
-    intent = data.get("intent")
     request_id = str(uuid.uuid4())
 
-    #send the request to gemma4 on the VM
+    # send to VM
     safe_send(json.dumps({
         "request_id": request_id,
-        "intent": intent
+        "text": intent,
+        "request": "sentence"
     }))
 
-    #wait for the response
+    # wait for response
     timeout = 120
     start = time.time()
-
     result = None
 
     while time.time() - start < timeout:
@@ -48,49 +51,69 @@ def select():
                 break
         time.sleep(0.05)
 
+    # timeout case
     if result is None:
-        return jsonify({"error": "VM timeout"}), 504
+        socketio.emit("sentence_error", {
+            "error": "VM timeout"
+        })
+        return
 
-    #Text to speech generation.
-    #For now the TTS is done on the server, which is not the right way. should return the audio files to the webpage for scalability
+    # generate TTS
     generate_tts_audio(result["text"])
+
+    # # send back to UI
+    # socketio.emit("sentence_result", {
+    #     "text": result["text"],
+    #     "audio": audio_path
+    # })
     
 @socketio.on("phrase_selected")
 def handle_phrase(data):
-    phrase = data["phrase"]
+    print(data)
+    phrase = data.get("sentence")
+    phrase = ",".join(phrase)
+    if not phrase:
+        socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
+        return
 
-    # build new suggestions
-    new_phrases = ["success", phrase, "returned"] #generate_phrases(phrase)
+    request_id = str(uuid.uuid4())
 
-    # send to UI
+    # 🔹 Send request to VM
+    safe_send(json.dumps({
+        "request_id": request_id,
+        "text": phrase,
+        "request":"phrase"
+    }))
+
+    # 🔹 Tell UI we're processing (important for gaze UX)
+    socketio.emit("loading", {"status": "processing"}, to=request.sid)
+
+    # 🔹 Wait for response (non-blocking style)
+    timeout = 120
+    start = time.time()
+
+    result = None
+
+    while time.time() - start < timeout:
+        socketio.sleep(0.05)  # ✅ IMPORTANT: non-blocking
+
+        with responses_lock:
+            if request_id in responses:
+                result = responses.pop(request_id)
+                break
+
+    # 🔴 Timeout case
+    if result is None:
+        socketio.emit("error", {
+            "message": "VM timeout"
+        }, to=request.sid)
+        return
+
+    # 🟢 Success case
     socketio.emit("new_phrases", {
-        "phrases": new_phrases
-    })
-    # #send the request to gemma4 on the VM
-    # safe_send(json.dumps({
-    #     "request_id": request_id,
-    #     "intent": intent
-    # }))
+        "phrases": result
+    }, to=request.sid)
 
-    # #wait for the response
-    # timeout = 120
-    # start = time.time()
-
-    # result = None
-
-    # while time.time() - start < timeout:
-    #     with responses_lock:
-    #         if request_id in responses:
-    #             result = responses.pop(request_id)
-    #             break
-    #     time.sleep(0.05)
-
-    # if result is None:
-    #     return jsonify({"error": "VM timeout"}), 504
-
-    # #Text to speech generation.
-    # #For now the TTS is done on the server, which is not the right way. should return the audio files to the webpage for scalability
-    # generate_tts_audio(result["text"])
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.

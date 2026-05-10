@@ -171,8 +171,9 @@ function render_sentence() {
 // SERVER UPDATES (FULL REPLACE)
 // ================================
 socket_chat.on("new_phrases", (data) => {
-  const incoming = data.phrases || [];
-
+  console.log(data);
+  const incoming = data.phrases.text;
+  console.log(incoming);
   dynamicPhrases = incoming.map((p, index) => {
     const pos = layoutPositions[index % layoutPositions.length];
 

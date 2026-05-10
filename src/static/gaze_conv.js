@@ -12,7 +12,7 @@ let dwellStart = null;
 let triggered = false;
 
 let cursorEl = null;
-
+let isProcessingSentence = false;
 // ================================
 // SOCKET (GLOBAL SHARED)
 // ================================
@@ -91,18 +91,92 @@ function checkTargets(x, y) {
 // ================================ 
 // TRIGGER SELECTION (IMPORTANT CHANGE)
 // ================================
+// function triggerSelection(element) {
+//     const phrase = element.textContent.trim();
+//     const normalized = phrase.toLowerCase();
+
+//     console.log("Selected via gaze:", phrase);
+
+//     // ONLY when the word is exactly "end"
+//     if (normalized === "end") {
+
+//         console.log("Final sentence:", sentence_phrases);
+
+//         socket.emit("sentence", {
+//             sentence: sentence_phrases
+//         });
+
+//         // reset after sending
+//         sentence_phrases = [];
+//         baseDisabled = false;
+
+//         resetState();
+//         return;
+//     }
+
+//     // normal phrase flow
+//     const exists = sentence_phrases.some(
+//         p => p.toLowerCase() === normalized
+//     );
+
+//     if (!exists) {
+//         sentence_phrases.push(phrase);
+
+//         socket.emit("phrase_selected", {
+//             sentence: sentence_phrases
+//         });
+//     } else {
+//         console.log("Already selected:", phrase);
+//     }
+
+//     baseDisabled = true;
+//     resetState();
+// }
 function triggerSelection(element) {
     const phrase = element.textContent.trim();
+    const normalized = phrase.toLowerCase();
 
     console.log("Selected via gaze:", phrase);
-    sentence_phrases.push(phrase);
-    socket.emit("phrase_selected", {
-        phrase: phrase
-    });
-    baseDisabled=true;
+
+    // 🔴 BLOCK ALL INPUT WHILE PROCESSING
+    if (isProcessingSentence) {
+        console.log("Waiting for previous sentence to finish...");
+        return;
+    }
+
+    // ONLY when word is "end"
+    if (normalized === "end") {
+
+        // isProcessingSentence = true; // 
+
+        console.log("Final sentence:", sentence_phrases);
+
+        socket.emit("sentence", {
+            sentence: sentence_phrases
+        });
+        sentence_phrases = [];
+
+        resetState();
+        return;
+    }
+
+    // 🟢 normal phrase selection
+    const exists = sentence_phrases.some(
+        p => p.toLowerCase() === normalized
+    );
+
+    if (!exists) {
+        sentence_phrases.push(phrase);
+
+        socket.emit("phrase_selected", {
+            phrase: phrase,
+            sentence: sentence_phrases
+        });
+    }
+
+    baseDisabled = true;
     resetState();
 }
-
 // ================================
 // RESET
 // ================================
