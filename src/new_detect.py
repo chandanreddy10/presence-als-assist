@@ -17,10 +17,11 @@ import time
 
 # connect to Flask server
 sio = socketio.Client()
+@sio.event
+def connect():
+    print("✅ Connected to Flask server")
 
-sio.connect("http://127.0.0.1:5050")
-
-print("Connected to Flask")
+sio.connect("http://127.0.0.1:5050", namespaces=["/"])
 
 screen_w, screen_h = 1920, 1200
 pyautogui.FAILSAFE = False
@@ -589,12 +590,13 @@ try:
                 # FINAL SAFETY CAST
                 mx = int(np.clip(smooth_x, 0, screen_w - 1))
                 my = int(np.clip(smooth_y, 0, screen_h - 1))
-
-                sio.emit("gaze_data", {
-                            "x": mx,
-                            "y": my
-                        })
-                time.sleep(0.03)
+                if sio.connected:
+    
+                    sio.emit("gaze_data", {
+                                "x": mx,
+                                "y": my
+                            })
+                    time.sleep(0.03)
             # -----------------------------
             # Printing data if enabled
             if PRINT_DATA:

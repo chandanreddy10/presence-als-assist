@@ -6,6 +6,8 @@
 <title>Story Mode</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="../static/socket.js"></script>
+<script src="../static/gaze_story.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -208,15 +210,15 @@
 <section class="flex gap-gutter w-full mt-4 min-h-[200px]">
 <button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
 <span class="text-label-lg font-label-lg text-secondary mb-4">Option 1</span>
-<span class="text-headline-md font-headline-md text-on-surface text-left">Attempt to communicate with the structure</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left" id="option-1">Attempt to communicate with the structure</span>
 </button>
 <button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
 <span class="text-label-lg font-label-lg text-secondary mb-4">Option 2</span>
-<span class="text-headline-md font-headline-md text-on-surface text-left">Reverse thrusters and try to break free</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left" id="option-2">Reverse thrusters and try to break free</span>
 </button>
 <button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
 <span class="text-label-lg font-label-lg text-secondary mb-4">Option 3</span>
-<span class="text-headline-md font-headline-md text-on-surface text-left">Scan the crystal for weak points</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left" id="option-3">Scan the crystal for weak points</span>
 </button>
 </section>
 </main>
@@ -231,5 +233,4 @@
 <span class="text-label-lg font-label-lg">Emergency</span>
 </a>
 </nav>
-<script src=../static/gaze_story.js></script>
 </body></html>

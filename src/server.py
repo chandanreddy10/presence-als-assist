@@ -15,12 +15,16 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
-
+story_history = []
 #webpage
 @app.route("/")
 def index():
     return render_template("home.html")
 
+@socketio.on("gaze_data")
+def handle_gaze(data):
+    socketio.emit("cursor_move", data, broadcast=True)
+    
 @socketio.on("sentence")
 def select(data):
     intent = data.get("sentence")
@@ -134,53 +138,62 @@ def handle_select_text(data):
 
 @socketio.on("story_text")
 def handle_select_text(data):
-    """
-    Receives text from frontend
-    """
+    text = (data.get("text") or "").strip()
 
-    genre = data.get("text")
-    if not genre:
+    if not text:
         socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
         return
 
+    # ignore option clicks
+    if "option" in text.lower():
+        return
+
+    story_history.append(text)
+
     request_id = str(uuid.uuid4())
 
-    # 🔹 Send request to VM
+    # send request to VM
     safe_send(json.dumps({
         "request_id": request_id,
-        "text": genre,
-        "request":"story"
+        "text": text,
+        "request": "story"
     }))
 
-    # 🔹 Tell UI we're processing (important for gaze UX)
     socketio.emit("loading", {"status": "processing"}, to=request.sid)
 
-    # 🔹 Wait for response (non-blocking style)
     timeout = 120
     start = time.time()
 
     result = None
 
     while time.time() - start < timeout:
-        socketio.sleep(0.05)  # ✅ IMPORTANT: non-blocking
+        socketio.sleep(0.05)
 
         with responses_lock:
             if request_id in responses:
                 result = responses.pop(request_id)
                 break
 
-    # 🔴 Timeout case
     if result is None:
-        socketio.emit("error", {
-            "message": "VM timeout"
-        }, to=request.sid)
+        socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
         return
-    # print(result["text"])
+
+    story_history.append(result["text"])
+
+    # ⚠️ ideally move this to background worker
     generate_tts_audio(result["text"], voice="not default")
-    # # 🟢 Success case
-    # socketio.emit("new_phrases", {
-    #     "phrases": result
-    # }, to=request.sid)
+
+    socketio.emit(
+        "update_options",
+        {
+            "options": ["result 1", "result 2", "result 3"]
+        },
+        to=request.sid   # ✅ IMPORTANT FIX
+    )
+        # # 🟢 Success case
+        # socketio.emit("new_phrases", {
+        #     "phrases": result
+        # }, to=request.sid)
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.

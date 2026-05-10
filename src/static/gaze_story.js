@@ -1,3 +1,6 @@
+// socket_story connection (shared across all pages)
+const socket_story = window.socket;
+
 const DWELL_TIME = 3000;
 const HIT_PADDING = 10;
 
@@ -25,17 +28,12 @@ function ensureCursor() {
     }
 }
 
-// Socket connection (shared across all pages)
-const socket = io("http://127.0.0.1:5050", {
-    transports: ["websocket", "polling"]
-});
-
-socket.on("connect", () => {
+socket_story.on("connect", () => {
     console.log("Gaze system connected");
 });
 
 // Cursor tracking
-socket.on("cursor_move", (data) => {
+socket_story.on("cursor_move", (data) => {
 
     ensureCursor();
 
@@ -105,7 +103,7 @@ function triggerGazeAction(element) {
 
     // CASE 2: ALS phrase selection (NEW)
     if (text) {
-        socket.emit("story_text", {
+        socket_story.emit("story_text", {
             text: text
         });
 
@@ -113,6 +111,20 @@ function triggerGazeAction(element) {
         return;
     }
 }
+socket_story.on("update_options", (data) => {
+    console.log("🔥 received update_options:", data);
+
+    const options = data.options || [];
+
+    if (options.length < 3) {
+        console.warn("Not enough options:", options);
+        return;
+    }
+
+    document.getElementById("option-1").textContent = options[0];
+    document.getElementById("option-2").textContent = options[1];
+    document.getElementById("option-3").textContent = options[2];
+});
 // Reset state
 function resetGazeState() {
     hoveredElement = null;
