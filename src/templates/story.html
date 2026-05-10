@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Research Exploration Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fbf9f8",
+                        "on-surface-variant": "#404847",
+                        "primary-fixed-dim": "#a0d0c9",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#303030",
+                        "on-secondary-fixed-variant": "#474361",
+                        "surface-variant": "#e4e2e1",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1c1c",
+                        "tertiary": "#456179",
+                        "inverse-primary": "#a0d0c9",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#97b4cf",
+                        "primary-fixed": "#bcece5",
+                        "on-tertiary-fixed": "#001e31",
+                        "primary": "#386661",
+                        "on-tertiary-container": "#29465d",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#1b4b47",
+                        "background": "#fbf9f8",
+                        "secondary": "#5f5b7a",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#625d7d",
+                        "outline-variant": "#c0c8c6",
+                        "secondary-container": "#dfd8fe",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e5deff",
+                        "on-tertiary-fixed-variant": "#2d4960",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary-fixed-dim": "#c9c2e6",
+                        "on-surface": "#1b1c1c",
+                        "surface-tint": "#386661",
+                        "tertiary-fixed-dim": "#adcae5",
+                        "outline": "#707977",
+                        "surface-container-high": "#eae8e7",
+                        "primary-container": "#8bbab4",
+                        "on-primary-fixed-variant": "#1f4e4a",
+                        "tertiary-fixed": "#cbe6ff",
+                        "on-secondary-fixed": "#1c1833",
+                        "on-primary-fixed": "#00201d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "min_target": "120px",
+                        "safe_zone": "80px",
+                        "margin": "64px",
+                        "gutter": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Atkinson Hyperlegible Next"],
+                        "display-lg": ["Atkinson Hyperlegible Next"],
+                        "label-lg": ["Atkinson Hyperlegible Next"],
+                        "body-md": ["Atkinson Hyperlegible Next"],
+                        "headline-md": ["Atkinson Hyperlegible Next"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["40px", {"lineHeight": "52px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-lg": ["28px", {"lineHeight": "40px", "letterSpacing": "0.015em", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "64px", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                        "label-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "0.03em", "fontWeight": "600"}],
+                        "body-md": ["24px", {"lineHeight": "36px", "letterSpacing": "0.015em", "fontWeight": "400"}],
+                        "headline-md": ["32px", {"lineHeight": "44px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            /* Prevent scrolling on the body for gaze safety */
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* Gaze Interaction Styles */
+        .gaze-target {
+            min-height: 120px;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        .gaze-target:hover {
+            transform: scale(1.02);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 20px rgba(139, 186, 180, 0.2); /* primary color glow */
+        }
+        
+        /* Beveled soft edge for cards */
+        .soft-card {
+            box-shadow: 0 40px 40px rgba(51, 51, 51, 0.04), inset 0 0 0 1px #ffffff;
+        }
+
+        /* Auto-scrolling panel hide scrollbar but allow vertical scroll */
+        .auto-scroll-panel {
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* Internet Explorer 10+ */
+        }
+        .auto-scroll-panel::-webkit-scrollbar { 
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background flex h-screen w-screen overflow-hidden">
+<!-- SideNavBar (WEB) -->
+<nav class="hidden md:flex flex-col gap-gutter py-margin bg-surface-container-low dark:bg-surface-container-highest shadow-[40px_0_40px_rgba(51,51,51,0.04)] h-full w-[240px] z-40 relative">
+<div class="px-6 mb-8">
+<h2 class="text-headline-md font-headline-md text-primary">Communication</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Ready to assist</p>
+</div>
+<div class="flex-1 flex flex-col gap-4">
+<!-- Inactive -->
+<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="text-label-lg font-label-lg">Speak</span>
+</button>
+<!-- Inactive -->
+<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+<span class="text-label-lg font-label-lg">Phrases</span>
+</button>
+<!-- Inactive -->
+<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">accessibility_new</span>
+<span class="text-label-lg font-label-lg">Needs</span>
+</button>
+<!-- Inactive -->
+<button class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 rounded-lg gaze-target hover:bg-secondary-container/50 hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="text-label-lg font-label-lg">Settings</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full relative">
+<!-- TopAppBar (WEB) -->
+<header class="hidden md:flex justify-between items-center w-full px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)] z-30">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Lumina</h1>
+<button class="gaze-target rounded-full p-4 hover:scale-[1.02] hover:backdrop-blur-xl transition-all duration-300 bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</header>
+<!-- Canvas Area -->
+<div class="flex-1 flex flex-col px-margin py-8 gap-gutter overflow-hidden">
+<!-- Top Section: Research Topics -->
+<div class="flex gap-gutter w-full">
+<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
+<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">science</span>
+<span class="text-headline-md font-headline-md text-on-surface">Science</span>
+</button>
+<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
+<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">history_edu</span>
+<span class="text-headline-md font-headline-md text-on-surface">History</span>
+</button>
+<!-- Active Topic Example -->
+<button class="flex-1 gaze-target soft-card bg-primary-container text-on-primary-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group ring-4 ring-primary/20 scale-[1.02]">
+<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">palette</span>
+<span class="text-headline-md font-headline-md">Art</span>
+</button>
+<button class="flex-1 gaze-target soft-card bg-surface-container rounded-lg p-6 flex flex-col items-center justify-center gap-4 group">
+<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 0;">memory</span>
+<span class="text-headline-md font-headline-md text-on-surface">Technology</span>
+</button>
+</div>
+<!-- Middle Section: Information Panel -->
+<div class="flex-1 soft-card bg-surface-container-low rounded-xl p-8 flex flex-col gap-6 auto-scroll-panel relative">
+<div class="sticky top-0 bg-surface-container-low pb-4 z-10 border-b border-outline-variant/30 flex justify-between items-center">
+<h2 class="text-display-lg font-display-lg text-on-surface">Impressionism</h2>
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</div>
+<div class="flex flex-col gap-8 text-body-lg font-body-lg text-on-surface-variant max-w-5xl">
+<p>
+                        Impressionism is a 19th-century art movement characterized by relatively small, thin, yet visible brush strokes, open composition, emphasis on accurate depiction of light in its changing qualities.
+                    </p>
+<div class="w-full h-64 rounded-lg bg-surface-container overflow-hidden soft-card">
+<img alt="A beautiful impressionist painting" class="w-full h-full object-cover" data-alt="A high-quality digital reproduction of an impressionist-style landscape painting. The artwork features soft, visible brushstrokes depicting a serene garden scene with a small pond. The lighting is bright and dappled, capturing the essence of early morning sunlight filtering through trees. The color palette is composed of soft teals, lavender, and muted greens, aligning perfectly with a calm, light-mode assistive interface aesthetic. The overall mood is tranquil, reflective, and culturally rich." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqGo8pfjU44VeWHQpDAa26MbnY-BSH4TlQKyN3SFoy8_PXciBCqyNSMBWEo00Tp22JwHr4L2F-iXvGGjvLWHLzRrgtXn0pk17OX5xw3W-XdMfBPxfQ1EBOFzThPmzvAMHuxQxr3qWTd26oVd9dDGOasJJZp6bVdCZsM3B_zZob1uQLJl2w-OgAv7WgD4eI1Pr-p3Kan0ukmo7JMTLN_P0edLiM6HzFYuDLfkF4FGslzpewLOGzFyFm-NLqbDwtvE8RI26XCMAvJxY"/>
+</div>
+<p>
+                        Originating with a group of Paris-based artists whose independent exhibitions brought them to prominence during the 1870s and 1880s, the movement faced harsh opposition from the conventional art community in France.
+                    </p>
+<p class="text-primary font-semibold">
+                        Key figures included Claude Monet, Edgar Degas, and Pierre-Auguste Renoir.
+                    </p>
+</div>
+<!-- Fade out at bottom to suggest more content -->
+<div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface-container-low to-transparent pointer-events-none"></div>
+</div>
+<!-- Bottom Section: Follow-up Questions Grid -->
+<div class="grid grid-cols-2 gap-gutter h-[320px]">
+<button class="gaze-target soft-card bg-secondary-container text-on-secondary-container rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-secondary-container/80 transition-all text-left">
+<div class="p-4 bg-surface rounded-full flex-shrink-0">
+<span class="material-symbols-outlined text-4xl text-secondary" style="font-variation-settings: 'FILL' 0;">help</span>
+</div>
+<span class="text-headline-md font-headline-md">Who were the main artists?</span>
+</button>
+<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
+<div class="p-4 bg-surface rounded-full flex-shrink-0">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
+</div>
+<span class="text-headline-md font-headline-md">Why was it controversial?</span>
+</button>
+<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
+<div class="p-4 bg-surface rounded-full flex-shrink-0">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
+</div>
+<span class="text-headline-md font-headline-md">Show me famous paintings</span>
+</button>
+<button class="gaze-target soft-card bg-surface-container text-on-surface rounded-xl p-8 flex items-center justify-start gap-6 hover:bg-surface-variant transition-all text-left">
+<div class="p-4 bg-surface rounded-full flex-shrink-0">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 0;">help</span>
+</div>
+<span class="text-headline-md font-headline-md">What came after Impressionism?</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (MOBILE ONLY - Hidden on md and up) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 dark:bg-on-background/80 rounded-t-xl backdrop-blur-xl border-t border-white/20 shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
+<!-- Active -->
+<button class="gaze-target flex flex-col items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-lg px-margin py-6 scale-[1.05] ring-8 ring-tertiary/10 transition-all duration-500">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-label-lg font-label-lg mt-2">Home</span>
+</button>
+<!-- Inactive -->
+<button class="gaze-target flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 0;">emergency_share</span>
+<span class="text-label-lg font-label-lg mt-2">Emergency</span>
+</button>
+</nav>
+</body></html>

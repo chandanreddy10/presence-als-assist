@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumina - Assistive Storytelling</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fbf9f8",
+                        "on-surface-variant": "#404847",
+                        "primary-fixed-dim": "#a0d0c9",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#303030",
+                        "on-secondary-fixed-variant": "#474361",
+                        "surface-variant": "#e4e2e1",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1c1c",
+                        "tertiary": "#456179",
+                        "inverse-primary": "#a0d0c9",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#97b4cf",
+                        "primary-fixed": "#bcece5",
+                        "on-tertiary-fixed": "#001e31",
+                        "primary": "#386661",
+                        "on-tertiary-container": "#29465d",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#1b4b47",
+                        "background": "#fbf9f8",
+                        "secondary": "#5f5b7a",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#625d7d",
+                        "outline-variant": "#c0c8c6",
+                        "secondary-container": "#dfd8fe",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e5deff",
+                        "on-tertiary-fixed-variant": "#2d4960",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary-fixed-dim": "#c9c2e6",
+                        "on-surface": "#1b1c1c",
+                        "surface-tint": "#386661",
+                        "tertiary-fixed-dim": "#adcae5",
+                        "outline": "#707977",
+                        "surface-container-high": "#eae8e7",
+                        "primary-container": "#8bbab4",
+                        "on-primary-fixed-variant": "#1f4e4a",
+                        "tertiary-fixed": "#cbe6ff",
+                        "on-secondary-fixed": "#1c1833",
+                        "on-primary-fixed": "#00201d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "min_target": "120px",
+                        "safe_zone": "80px",
+                        "margin": "64px",
+                        "gutter": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Atkinson Hyperlegible Next"],
+                        "display-lg": ["Atkinson Hyperlegible Next"],
+                        "label-lg": ["Atkinson Hyperlegible Next"],
+                        "body-md": ["Atkinson Hyperlegible Next"],
+                        "headline-md": ["Atkinson Hyperlegible Next"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-lg": ["28px", { "lineHeight": "40px", "letterSpacing": "0.015em", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "64px", "letterSpacing": "0.02em", "fontWeight": "700" }],
+                        "label-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "0.03em", "fontWeight": "600" }],
+                        "body-md": ["24px", { "lineHeight": "36px", "letterSpacing": "0.015em", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "44px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(135deg, #f0eded 0%, #dfd8fe 50%, #bcece5 100%);
+            overflow: hidden; /* Fixed viewport */
+        }
+        
+        .glass-panel {
+            background: rgba(251, 249, 248, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 40px 40px rgba(51, 51, 51, 0.04);
+        }
+
+        .gaze-target {
+            transition: all 0.3s ease-out;
+        }
+        
+        .gaze-target:hover {
+            transform: scale(1.02);
+            backdrop-filter: blur(12px);
+            background: rgba(251, 249, 248, 0.9);
+            box-shadow: 0 0 20px rgba(139, 186, 180, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Hide scrollbar for the story text container to make it look like a continuous stream */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen text-on-surface flex font-body-md">
+<!-- SideNavBar (WEB) -->
+<nav class="hidden md:flex flex-col bg-surface-container-low dark:bg-surface-container-highest docked left-0 h-full w-[240px] shadow-[40px_0_40px_rgba(51,51,51,0.04)] fixed left-0 top-0 h-full flex flex-col gap-gutter py-margin z-50">
+<div class="px-6 mb-8">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">Lumina</h1>
+<p class="text-on-surface-variant mt-2 text-label-lg font-label-lg">Communication</p>
+</div>
+<div class="flex-1 overflow-y-auto px-4">
+<!-- Active state semantic match for storytelling might be 'Phrases' or generic activity, assuming it's an activity under Needs or a custom module, let's highlight generic communication or Speak if it's generating text. Let's use Speak as the active module for generating a story. -->
+<a class="flex items-center gap-gutter bg-primary-container text-on-primary-container rounded-lg p-6 m-4 hover:scale-[1.02] hover:bg-secondary-container/50 transition-all scale-[1.02] shadow-[0_0_20px_rgba(139,186,180,0.2)] gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="text-label-lg font-label-lg">Speak</span>
+</a>
+<a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-label-lg font-label-lg">Phrases</span>
+</a>
+<a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="accessibility_new">accessibility_new</span>
+<span class="text-label-lg font-label-lg">Needs</span>
+</a>
+<a class="flex items-center gap-gutter text-on-surface-variant p-6 m-4 hover:bg-secondary-container/50 hover:scale-[1.02] transition-all gaze-target min-h-min_target" href="#">
+<span class="material-symbols-outlined text-4xl" data-icon="settings">settings</span>
+<span class="text-label-lg font-label-lg">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 h-full flex flex-col md:ml-[240px] pb-[160px] md:pb-0 relative z-10 px-margin py-margin gap-gutter box-border">
+<!-- TopAppBar (WEB - though usually top nav, we integrate title here as part of canvas when sidenav is present) -->
+<header class="flex justify-between items-center w-full px-margin py-8 bg-surface dark:bg-on-background shadow-[0_40px_40px_rgba(51,51,51,0.04)] rounded-xl glass-panel mb-8">
+<h2 class="text-headline-lg font-headline-lg text-primary dark:text-primary-fixed">Story Mode</h2>
+<button class="gaze-target min-w-min_target min-h-min_target flex items-center justify-center bg-error-container text-on-error-container rounded-lg px-8 py-4">
+<span class="material-symbols-outlined text-5xl mr-4" data-icon="close">close</span>
+<span class="text-label-lg font-label-lg">Exit Story</span>
+</button>
+</header>
+<!-- Top Section: Genre Selection -->
+<section class="flex gap-gutter w-full min-h-[160px]">
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target border-b-4 border-primary bg-primary-container/20">
+<span class="material-symbols-outlined text-5xl mb-2 text-primary" data-icon="rocket_launch">rocket_launch</span>
+<span class="text-headline-md font-headline-md text-primary">Sci-Fi</span>
+</button>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-secondary" data-icon="history_edu">history_edu</span>
+<span class="text-headline-md font-headline-md text-on-surface">Historical</span>
+</button>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-tertiary" data-icon="favorite">favorite</span>
+<span class="text-headline-md font-headline-md text-on-surface">Romance</span>
+</button>
+<button class="flex-1 glass-panel rounded-lg p-6 flex flex-col items-center justify-center gaze-target">
+<span class="material-symbols-outlined text-5xl mb-2 text-on-surface-variant" data-icon="castle">castle</span>
+<span class="text-headline-md font-headline-md text-on-surface">Fantasy</span>
+</button>
+</section>
+<!-- Middle Section: Story Stream Container -->
+<section class="flex-1 glass-panel rounded-xl p-12 overflow-y-auto no-scrollbar relative shadow-inner">
+<div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-surface/80 to-transparent z-10 pointer-events-none rounded-t-xl"></div>
+<div class="flex flex-col justify-end min-h-full pb-8">
+<!-- Oldest text (fading out) -->
+<p class="text-body-lg font-body-lg text-on-surface-variant/40 mb-8">
+                    The metallic hum of the starship's engines vibrated through the floorboards. Captain Elara checked the navigation console, a sense of unease settling over her as the coordinates refused to lock.
+                </p>
+<p class="text-body-lg font-body-lg text-on-surface-variant/70 mb-8">
+                    "Sensors indicate a massive anomaly dead ahead," Jax announced, his hands flying across the control panel. "It's pulling us in."
+                </p>
+<!-- Newest, active text -->
+<p class="text-display-lg font-display-lg text-on-surface leading-tight">
+                    Before she could order evasive maneuvers, the viewing screen filled with blinding, kaleidoscopic light. The ship lurched violently, and a strange, crystalline structure materialized from the void, hovering ominously in their path.
+                </p>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface/80 to-transparent z-10 pointer-events-none rounded-b-xl"></div>
+</section>
+<!-- Bottom Section: Choice Cards -->
+<section class="flex gap-gutter w-full mt-4 min-h-[200px]">
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 1</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Attempt to communicate with the structure</span>
+</button>
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 2</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Reverse thrusters and try to break free</span>
+</button>
+<button class="flex-1 bg-surface-container rounded-lg p-8 flex flex-col items-start justify-center gaze-target shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/50">
+<span class="text-label-lg font-label-lg text-secondary mb-4">Option 3</span>
+<span class="text-headline-md font-headline-md text-on-surface text-left">Scan the crystal for weak points</span>
+</button>
+</section>
+</main>
+<!-- BottomNavBar (MOBILE) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-margin py-8 min-h-[160px] bg-surface/80 dark:bg-on-background/80 docked full-width bottom-0 rounded-t-xl backdrop-blur-xl border-t border-white/20 shadow-[0_-40px_40px_rgba(51,51,51,0.04)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-margin py-6 hover:scale-[1.02] hover:shadow-lg transition-all gaze-target" href="#">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="home">home</span>
+<span class="text-label-lg font-label-lg">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-lg px-margin py-6 scale-[1.05] ring-8 ring-tertiary/10 transition-all duration-500 gaze-target" href="#">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="emergency_share">emergency_share</span>
+<span class="text-label-lg font-label-lg">Emergency</span>
+</a>
+</nav>
+</body></html>
