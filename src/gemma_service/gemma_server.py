@@ -5,11 +5,10 @@ import asyncio
 
 app = FastAPI()
 
-#gemma URL for serving
+# gemma URL for serving
 GEMMA_URL = "http://localhost:8001/gemma"
 
 SEM = asyncio.Semaphore(2)
-
 
 @app.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket):
@@ -22,34 +21,28 @@ async def ws_endpoint(websocket: WebSocket):
                 data = await websocket.receive_json()
 
                 request_id = data.get("request_id")
-                user_text = data.get("text", "")
-                route_signal = data.get("route")
-
-                #route signal decision hints at what the user intends and proceeds as required.
-                ## 1. Word suggestion
-                ## 2. Sentence generation
-                ## 3. Query
-                ## 4. Fun interaction.
-
-
+                user_request = data.get("request")
+                user_text = data.get("text")
                 ## Manage the context.
-                ## 
+                ##
                 async with SEM:
                     resp = await client.post(
                         GEMMA_URL,
-                        json={"text": user_text}
+                        json={"text": user_text, "user_request": user_request},
                     )
 
                 result = resp.json()
 
                 # single full response
-                await websocket.send_json({
-                    "request_id": request_id,
-                    "text": result["response"],
-                    "intent": data.get("intent"),
-                    "latency_llm": result.get("latency_ms"),
-                    "done": True
-                })
+                await websocket.send_json(
+                    {
+                        "request_id": request_id,
+                        "text": result["response"],
+                        "input": data.get("text"),
+                        "latency_llm": result.get("latency_ms"),
+                        "done": True,
+                    }
+                )
 
         except WebSocketDisconnect:
             print("Client disconnected")
