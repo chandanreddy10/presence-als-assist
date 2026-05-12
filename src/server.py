@@ -7,6 +7,10 @@ import threading
 
 from ws import safe_send, responses, responses_lock, init_ws
 from tts_service import generate_tts_audio
+import base64
+import numpy as np 
+import cv2
+import os 
 
 #Initialize the websocket.
 init_ws()
@@ -136,70 +140,86 @@ def handle_select_text(data):
     elif "Medication" in text:
         generate_tts_audio("I need to take my medication.") 
 
+def process_story_request(sid, request_id, text):
+    try:
+        # Send to your VM / model
+        safe_send(json.dumps({
+            "request_id": request_id,
+            "text": text,
+            "request": "story"
+        }))
+
+        timeout = 120
+        start = time.time()
+        result = None
+
+        while time.time() - start < timeout:
+            socketio.sleep(0.05)
+
+            with responses_lock:
+                if request_id in responses:
+                    result = responses.pop(request_id)
+                    break
+
+        # ❌ TIMEOUT
+        if result is None:
+            socketio.emit("error", {"message": "VM timeout"}, to=sid)
+            socketio.emit("story_ack", {}, to=sid)
+            return
+
+        # ✅ SUCCESS
+        story_history.append(result["text"])
+
+        generate_tts_audio(result["text"], voice="not default")
+
+        socketio.emit(
+            "update_options",
+            {
+                "options": [
+                    "Tell me more about the live longer",
+                    "Tell me more about the live longer",
+                    "Also more about the live longer."
+                ]
+            },
+            to=sid
+        )
+
+        # 🔑 UNLOCK CLIENT
+        socketio.emit("story_ack", {}, to=sid)
+
+    except Exception as e:
+        print("❌ Error:", e)
+        socketio.emit("error", {"message": "Server error"}, to=sid)
+        socketio.emit("story_ack", {}, to=sid)
+
 @socketio.on("story_text")
 def handle_select_text(data):
+    sid = request.sid
     text = (data.get("text") or "").strip()
 
-    # if not text:
-    #     socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
-    #     return
+    if not text:
+        socketio.emit("error", {"message": "No phrase provided"}, to=sid)
+        socketio.emit("story_ack", {}, to=sid)
+        return
 
-    # # ignore option clicks
-    # if "option" in text.lower():
-    #     return
+    if "option" in text.lower():
+        socketio.emit("story_ack", {}, to=sid)
+        return
 
-    # story_history.append(text)
+    story_history.append(text)
 
-    # request_id = str(uuid.uuid4())
+    request_id = str(uuid.uuid4())
 
-    # # send request to VM
-    # safe_send(json.dumps({
-    #     "request_id": request_id,
-    #     "text": text,
-    #     "request": "story"
-    # }))
+    socketio.emit("loading", {"status": "processing"}, to=sid)
 
-    # socketio.emit("loading", {"status": "processing"}, to=request.sid)
-
-    # timeout = 120
-    # start = time.time()
-
-    # result = None
-
-    # while time.time() - start < timeout:
-    #     socketio.sleep(0.05)
-
-    #     with responses_lock:
-    #         if request_id in responses:
-    #             result = responses.pop(request_id)
-    #             break
-
-    # if result is None:
-    #     socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
-    #     return
-
-    # story_history.append(result["text"])
-
-    # ⚠️ ideally move this to background worker
-    # generate_tts_audio(result["text"], voice="not default")
-    generate_tts_audio("""The clock in Room 312 had no hands.
-
-No one noticed at first. The patients came and went, nurses checked charts, doctors spoke in careful tones—but the clock above the door remained blank-faced, its white circle staring down like an eye that refused to blink.
-
-Except Mara noticed.
-
-She had been there longer than most. Long enough to learn the rhythm of the hallway: the squeak of the medicine cart at dawn, the distant hum of elevators, the soft crying that echoed at night when people thought no one could hear. Time mattered when you had little of it—or too much.""", voice="not default")
-    socketio.emit(
-        "update_options",
-        {
-            "options": ["Tell me more about the live longer", "Tell me more about the live longer", "Also more about the live longer."]
-        },
-        to=request.sid   # ✅ IMPORTANT FIX
+    # 🔥 IMPORTANT: run async
+    socketio.start_background_task(
+        process_story_request,
+        sid,
+        request_id,
+        text
     )
-        # # 🟢 Success case
-        # socketio.emit("new_phrases", {
-        #     "phrases": result
-        # }, to=request.sid)
+
 #Gaze Tracker
 #Connection between the gaze detection file and the webpage.
 #this socket helps in  communicating the gaze data to the webpage.
@@ -214,6 +234,34 @@ def handle_gaze(data):
         "x": x,
         "y": y
     })
+
+
+SAVE_DIR = "frames"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+@socketio.on("frame_data")
+def handle_frame(data):
+    try:
+        # 1. decode base64 string
+        img_data = base64.b64decode(data["image"])
+
+        # 2. convert to numpy array
+        nparr = np.frombuffer(img_data, np.uint8)
+
+        # 3. decode image
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # 4. save frame
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = os.path.join(SAVE_DIR, f"frame_{timestamp}.jpg")
+
+        cv2.imwrite(filename, frame)
+
+        print("Saved:", filename)
+
+    except Exception as e:
+        print("Error saving frame:", e)
+
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5050, debug=True)
