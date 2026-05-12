@@ -23,28 +23,59 @@ async def ws_endpoint(websocket: WebSocket):
                 request_id = data.get("request_id")
                 user_request = data.get("request")
                 user_text = data.get("text")
-                ## Manage the context.
-                ##
-                async with SEM:
-                    resp = await client.post(
-                        GEMMA_URL,
-                        json={"text": user_text, "user_request": user_request},
+                try:
+                    async with SEM:
+                        resp = await client.post(
+                            GEMMA_URL,
+                            json={
+                                "text": user_text,
+                                "user_request": user_request
+                            },
+                        )
+
+                    # ❗ check HTTP status
+                    if resp.status_code != 200:
+                        await websocket.send_json({
+                            "request_id": request_id,
+                            "error": f"VM error {resp.status_code}",
+                            "done": True
+                        })
+                        continue
+
+                    result = resp.json()
+
+                    # ❗ safe parsing
+                    text = (
+                        result.get("response")
+                        or result.get("text")
+                        or result.get("output")
                     )
 
-                result = resp.json()
+                    if text is None:
+                        await websocket.send_json({
+                            "request_id": request_id,
+                            "error": "Invalid VM response format",
+                            "done": True
+                        })
+                        continue
 
-                # single full response
-                await websocket.send_json(
-                    {
+                    await websocket.send_json({
                         "request_id": request_id,
-                        "text": result["response"],
-                        "input": data.get("text"),
+                        "text": text,
+                        "input": user_text,
                         "latency_llm": result.get("latency_ms"),
                         "done": True,
-                    }
-                )
+                    })
+
+                except httpx.RequestError as e:
+                    await websocket.send_json({
+                        "request_id": request_id,
+                        "error": f"Request failed: {str(e)}",
+                        "done": True
+                    })
 
         except WebSocketDisconnect:
             print("Client disconnected")
+
         except Exception as e:
-            print("Error:", e)
+            print("Unexpected error:", e)

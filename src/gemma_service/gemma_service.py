@@ -32,26 +32,43 @@ class LLMRequest(BaseModel):
     user_request: str
 
 
-def run_gemma(prompt: str, request:str):
+def run_gemma(prompt: str, request:str, image:str=False):
+    
     start = time.time()
+    if not image:
+        response = chat(
+            model="gemma4:e2b", messages=[{"role": "user", "content": prompt}], stream=False
+        )
 
-    response = chat(
-        model="gemma4:e2b", messages=[{"role": "user", "content": prompt}], stream=False
-    )
-
-    end = time.time()
-    if request == "phrase":
-        list_of_words = response.message.content.split(",")
-        list_of_words.append("End")
-        return {
-            "response": list_of_words,
+        end = time.time()
+        if request == "phrase":
+            list_of_words = response.message.content.split(",")
+            list_of_words.append("End")
+            return {
+                "response": list_of_words,
+                "latency_ms": round((end - start) * 1000, 2),
+            }
+        else:
+            return {
+            "response": response.message.content,
             "latency_ms": round((end - start) * 1000, 2),
         }
-    else:
+    elif image:
+        response = chat(
+        model="gemma4:e2b",
+        messages=[{
+            "role": "user",
+            "content":f"Output Yes if there is a person in the image",
+            "images":[f"{prompt}"]
+        }],
+        stream=False
+        )
+        end = time.time()
+
         return {
-        "response": response.message.content,
-        "latency_ms": round((end - start) * 1000, 2),
-    }
+            "response": response.message.content,
+            "latency_ms": round((end - start) * 1000, 2),
+        }
 
 def decode_image_and_save_to_temp(jpg_as_text):
      # 1. decode base64 string
@@ -80,7 +97,7 @@ def decode_image_and_save_to_temp(jpg_as_text):
 def gemma_endpoint(req: LLMRequest):
     text = req.text
     user_request = req.user_request
-    print(text)
+
     if user_request.lower() == "phrase":
         input_to_gemma = f"{phrase_prompt}\nList of Words selected by the patient : {text}"
         return run_gemma(input_to_gemma, user_request.lower())
@@ -92,5 +109,10 @@ def gemma_endpoint(req: LLMRequest):
     elif user_request.lower() == "story":
         input_to_gemma = f"Build a short story from the Genre 10 lines. Gnere:\n{text}"
         return run_gemma(input_to_gemma, user_request.lower())
+
+    elif user_request.lower() == "image":
+        input_to_gemma = decode_image_and_save_to_temp(text)
+        # input_to_gemma=text
+        return run_gemma(input_to_gemma, user_request.lower(), image=True)
 
     
