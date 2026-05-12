@@ -30,7 +30,7 @@ pyautogui.FAILSAFE = False
 smooth_x, smooth_y = 0, 0
 alpha = 0.25  # smoothing factor
 last_emit_time = time.time()
-time_difference=100
+time_difference=10
 calib_data = []
 calibrated = False
 min_dx = max_dx = min_dy = max_dy = 0

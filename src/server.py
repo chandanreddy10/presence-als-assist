@@ -235,32 +235,52 @@ def handle_gaze(data):
         "y": y
     })
 
-
-SAVE_DIR = "frames"
-os.makedirs(SAVE_DIR, exist_ok=True)
-
 @socketio.on("frame_data")
 def handle_frame(data):
     try:
-        # 1. decode base64 string
-        img_data = base64.b64decode(data["image"])
+        print("Frame received")
 
-        # 2. convert to numpy array
-        nparr = np.frombuffer(img_data, np.uint8)
+        if not data:
+            return
 
-        # 3. decode image
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        request_id = str(uuid.uuid4())
 
-        # 4. save frame
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = os.path.join(SAVE_DIR, f"frame_{timestamp}.jpg")
+        safe_send(json.dumps({
+            "request_id": request_id,
+            "text": data["image"],
+            "request": "image"
+        }))
 
-        cv2.imwrite(filename, frame)
+        print("Frame sent to VM")
 
-        print("Saved:", filename)
+        timeout = 120
+        start = time.time()
+        result = None
+
+        while time.time() - start < timeout:
+            socketio.sleep(0.05)
+
+            with responses_lock:
+                if request_id in responses:
+                    result = responses.pop(request_id)
+                    break
+
+        # ❗ TIMEOUT HANDLING
+        if result is None:
+            print("VM timeout for frame")
+            socketio.emit("error", {"message": "Image processing timeout"})
+            return
+
+        # ❗ SAFETY CHECK
+        text = result.get("text") or result.get("response")
+        if not text:
+            print("Invalid VM response:", result)
+            return
+
+        generate_tts_audio(text, voice="not default")
 
     except Exception as e:
-        print("Error saving frame:", e)
+        print("Error handling frame:", e)
 
 
 if __name__ == "__main__":
