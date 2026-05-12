@@ -140,53 +140,59 @@ def handle_select_text(data):
 def handle_select_text(data):
     text = (data.get("text") or "").strip()
 
-    if not text:
-        socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
-        return
+    # if not text:
+    #     socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
+    #     return
 
-    # ignore option clicks
-    if "option" in text.lower():
-        return
+    # # ignore option clicks
+    # if "option" in text.lower():
+    #     return
 
-    story_history.append(text)
+    # story_history.append(text)
 
-    request_id = str(uuid.uuid4())
+    # request_id = str(uuid.uuid4())
 
-    # send request to VM
-    safe_send(json.dumps({
-        "request_id": request_id,
-        "text": text,
-        "request": "story"
-    }))
+    # # send request to VM
+    # safe_send(json.dumps({
+    #     "request_id": request_id,
+    #     "text": text,
+    #     "request": "story"
+    # }))
 
-    socketio.emit("loading", {"status": "processing"}, to=request.sid)
+    # socketio.emit("loading", {"status": "processing"}, to=request.sid)
 
-    timeout = 120
-    start = time.time()
+    # timeout = 120
+    # start = time.time()
 
-    result = None
+    # result = None
 
-    while time.time() - start < timeout:
-        socketio.sleep(0.05)
+    # while time.time() - start < timeout:
+    #     socketio.sleep(0.05)
 
-        with responses_lock:
-            if request_id in responses:
-                result = responses.pop(request_id)
-                break
+    #     with responses_lock:
+    #         if request_id in responses:
+    #             result = responses.pop(request_id)
+    #             break
 
-    if result is None:
-        socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
-        return
+    # if result is None:
+    #     socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
+    #     return
 
-    story_history.append(result["text"])
+    # story_history.append(result["text"])
 
     # ⚠️ ideally move this to background worker
-    generate_tts_audio(result["text"], voice="not default")
+    # generate_tts_audio(result["text"], voice="not default")
+    generate_tts_audio("""The clock in Room 312 had no hands.
 
+No one noticed at first. The patients came and went, nurses checked charts, doctors spoke in careful tones—but the clock above the door remained blank-faced, its white circle staring down like an eye that refused to blink.
+
+Except Mara noticed.
+
+She had been there longer than most. Long enough to learn the rhythm of the hallway: the squeak of the medicine cart at dawn, the distant hum of elevators, the soft crying that echoed at night when people thought no one could hear. Time mattered when you had little of it—or too much.""", voice="not default")
     socketio.emit(
         "update_options",
         {
-            "options": ["result 1", "result 2", "result 3"]
+            "options": ["Tell me more about the live longer", "Tell me more about the live longer", "Also more about the live longer."]
         },
         to=request.sid   # ✅ IMPORTANT FIX
     )

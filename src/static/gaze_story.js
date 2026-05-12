@@ -7,7 +7,7 @@ const HIT_PADDING = 10;
 let hoveredElement = null;
 let dwellStart = null;
 let alreadyTriggered = false;
-
+let InProgress = false;
 let cursorEl = null;
 
 // Ensure cursor exists on every page
