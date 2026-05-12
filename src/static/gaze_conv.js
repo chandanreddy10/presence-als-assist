@@ -133,6 +133,13 @@ function checkTargets(x, y) {
 //     resetState();
 // }
 function triggerSelection(element) {
+    const href = element.dataset.href;
+
+    if (href) {
+        window.location.href = href;
+        return;
+    }
+
     const phrase = element.textContent.trim();
     const normalized = phrase.toLowerCase();
 
