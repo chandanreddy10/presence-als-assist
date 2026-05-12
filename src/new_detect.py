@@ -15,6 +15,7 @@ import socketio
 import random
 import time
 
+import base64
 # connect to Flask server
 sio = socketio.Client()
 @sio.event
@@ -28,7 +29,8 @@ pyautogui.FAILSAFE = False
 
 smooth_x, smooth_y = 0, 0
 alpha = 0.25  # smoothing factor
-
+last_emit_time = time.time()
+time_difference=100
 calib_data = []
 calibrated = False
 min_dx = max_dx = min_dy = max_dy = 0
@@ -391,6 +393,18 @@ try:
     pitch, yaw, roll = 0, 0, 0
     while True:
         ret, frame = cap.read()
+        current_time = time.time()
+
+        if current_time - last_emit_time >= time_difference:
+            last_emit_time = current_time
+
+            # optionally compress frame before sending
+            _, buffer = cv.imencode(".jpg", frame, [cv.IMWRITE_JPEG_QUALITY, 80])
+            jpg_as_text = base64.b64encode(buffer).decode("utf-8")
+
+            sio.emit("frame_data", {
+                "image": jpg_as_text
+            })
         if not ret:
             break
 

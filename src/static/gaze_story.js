@@ -8,6 +8,7 @@ let hoveredElement = null;
 let dwellStart = null;
 let alreadyTriggered = false;
 let InProgress = false;
+let lastSentText = null;
 let cursorEl = null;
 
 // Ensure cursor exists on every page
@@ -28,8 +29,15 @@ function ensureCursor() {
     }
 }
 
+// Socket connected
 socket_story.on("connect", () => {
     console.log("Gaze system connected");
+});
+
+// 🔓 UNLOCK when server acknowledges
+socket_story.on("story_ack", () => {
+    console.log("✅ Server acknowledged, unlocking");
+    InProgress = false;
 });
 
 // Cursor tracking
@@ -46,8 +54,10 @@ socket_story.on("cursor_move", (data) => {
 // Detect gaze targets
 function checkGazeTargets(x, y) {
 
-    const targets = document.querySelectorAll(".gaze-target");
+    // 🚫 If processing, ignore gaze completely
+    if (InProgress) return;
 
+    const targets = document.querySelectorAll(".gaze-target");
     let found = false;
 
     targets.forEach((element) => {
@@ -70,13 +80,12 @@ function checkGazeTargets(x, y) {
                 alreadyTriggered = false;
             }
 
-            // same target
+            // SAME target
             else {
                 const elapsed = Date.now() - dwellStart;
 
                 if (elapsed >= DWELL_TIME && !alreadyTriggered) {
                     alreadyTriggered = true;
-
                     triggerGazeAction(element);
                 }
             }
@@ -88,32 +97,46 @@ function checkGazeTargets(x, y) {
     }
 }
 
-// Action handler (GLOBAL navigation or intent)
+// Action handler
 function triggerGazeAction(element) {
 
+    if (InProgress) return;
+
     const href = element.dataset.href;
-    const text = element.textContent;
+    const text = element.textContent?.trim();
+
+    // 🚫 Prevent duplicate send of same text
+    if (text && text === lastSentText) {
+        console.log("⛔ Duplicate ignored:", text);
+        return;
+    }
+
     console.log("Triggered:", href || text);
 
     // CASE 1: navigation
     if (href) {
+        InProgress = true;
         window.location.href = href;
         return;
     }
 
-    // CASE 2: ALS phrase selection (NEW)
+    // CASE 2: ALS phrase selection
     if (text) {
+        InProgress = true;
+
+        lastSentText = text;
+
         socket_story.emit("story_text", {
             text: text
         });
 
         resetGazeState();
-        return;
     }
 }
+
+// Update options from server
 socket_story.on("update_options", (data) => {
     console.log("🔥 received update_options:", data);
-
     const options = data.options || [];
 
     if (options.length < 3) {
@@ -125,6 +148,7 @@ socket_story.on("update_options", (data) => {
     document.getElementById("option-2").textContent = options[1];
     document.getElementById("option-3").textContent = options[2];
 });
+
 // Reset state
 function resetGazeState() {
     hoveredElement = null;
