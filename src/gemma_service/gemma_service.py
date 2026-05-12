@@ -4,7 +4,15 @@ from ollama import chat
 import time
 from pathlib import Path
 
+import base64
+import numpy as np 
+import cv2
+import os 
+
 PROMPTS_DIR = Path("prompts")
+SAVE_DIR = "frames"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
 
 phrase_prompt = PROMPTS_DIR / "phrase.txt"
 sentence_prompt = PROMPTS_DIR / "sentence.txt"
@@ -45,6 +53,23 @@ def run_gemma(prompt: str, request:str):
         "latency_ms": round((end - start) * 1000, 2),
     }
 
+def decode_image_and_save_to_temp(jpg_as_text):
+     # 1. decode base64 string
+    img_data = base64.b64decode(jpg_as_text)
+
+    # 2. convert to numpy array
+    nparr = np.frombuffer(img_data, np.uint8)
+
+    # 3. decode image
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # 4. save frame
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    filename = os.path.join(SAVE_DIR, f"frame_{timestamp}.jpg")
+
+    cv2.imwrite(filename, frame)
+
+    return filename
 # route signal decision hints at what the user intends and proceeds as required.
 ## 2. Sentence generation
 ## 3. Query
@@ -67,3 +92,5 @@ def gemma_endpoint(req: LLMRequest):
     elif user_request.lower() == "story":
         input_to_gemma = f"Build a short story from the Genre 10 lines. Gnere:\n{text}"
         return run_gemma(input_to_gemma, user_request.lower())
+
+    
