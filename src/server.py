@@ -41,9 +41,10 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
 story_history = []
-global LATEST_FRAME, POSITION_STATUS
+global LATEST_FRAME, POSITION_STATUS, BREATHING_STATUS, MEDICATION_STATUS
 LATEST_FRAME = None
 POSITION_STATUS = None
+BREATHING_STATUS = None
 PREVIOUS_QA = {}
 
 
@@ -57,6 +58,51 @@ SCHEMA = {
     "required": ["safety_status", "count_people", "reason"],
     "additionalProperties": False,
 }
+
+
+def send_vm_request(
+    socketio,
+    sid,
+    safe_send,
+    responses,
+    responses_lock,
+    request_type: str,
+    text: str = "",
+    image: str = None,
+    timeout: int = 120,
+):
+    """
+    Function to send a request to VM / Remote machine that hosts gemma4.
+    """
+    request_id = str(uuid.uuid4())
+
+    payload = {
+        "request_id": request_id,
+        "text": text,
+        "request": request_type,
+    }
+
+    if image is not None:
+        payload["image_for_intent"] = image
+
+    safe_send(json.dumps(payload))
+
+    start = time.time()
+    result = None
+
+    while time.time() - start < timeout:
+        socketio.sleep(0.05)
+
+        with responses_lock:
+            if request_id in responses:
+                result = responses.pop(request_id)
+                break
+
+    if result is None:
+        socketio.emit("error", {"message": "VM timeout"}, to=sid)
+        return None
+
+    return result
 
 
 # webpage
@@ -162,46 +208,70 @@ def handle_select_text(data):
     """
 
     text = (data.get("text") or "").strip()
-    global POSITION_STATUS
-    if "Position" in text:
-        request_id = str(uuid.uuid4())
 
-        safe_send(
-            json.dumps(
-                {
-                    "request_id": request_id,
-                    "text": "",
-                    "image_for_intent": LATEST_FRAME,
-                    "request": "position",
-                }
-            )
+    global POSITION_STATUS
+
+    if "position" in text.lower():
+
+        result = send_vm_request(
+            socketio=socketio,
+            sid=request.sid,
+            safe_send=safe_send,
+            responses=responses,
+            responses_lock=responses_lock,
+            request_type="position",
+            text="",
+            image=LATEST_FRAME,
+            timeout=120,
         )
 
-        timeout = 120
-        start = time.time()
+        if result is None:
+            return
 
-        result = None
+        POSITION_STATUS = result.get("text")
+        print(POSITION_STATUS)
 
-        while time.time() - start < timeout:
+    elif "breathing" in text.lower():
+        global BREATHING_STATUS
 
-            with responses_lock:
-                if request_id in responses:
-                    result = responses.pop(request_id)
-                    break
+        result = send_vm_request(
+            socketio=socketio,
+            sid=request.sid,
+            safe_send=safe_send,
+            responses=responses,
+            responses_lock=responses_lock,
+            request_type="breathing",
+            text="",
+            image=LATEST_FRAME,
+            timeout=120,
+        )
 
         if result is None:
-            socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
             return
-        POSITION_STATUS = result["text"]
 
-    elif "Breathing" in text:
-        generate_tts_audio("I cannot breathe properly !")
-    elif "Others" in text:
-        generate_tts_audio("I am thirsty !")
-    elif "Medication" in text:
-        generate_tts_audio("I need to take my medication.")
-    else:
-        generate_tts_audio("I need to")
+        BREATHING_STATUS = result.get("text")
+        print(BREATHING_STATUS)
+
+    elif "medication" in text.lower():
+        global MEDICATION_STATUS
+
+        result = send_vm_request(
+            socketio=socketio,
+            sid=request.sid,
+            safe_send=safe_send,
+            responses=responses,
+            responses_lock=responses_lock,
+            request_type="medication",
+            text="",
+            image=LATEST_FRAME,
+            timeout=120,
+        )
+
+        if result is None:
+            return
+
+        MEDICATION_STATUS = result.get("text")
+        print(MEDICATION_STATUS)
 
 
 @socketio.on("pain_gq")
@@ -378,6 +448,7 @@ def enforce_schema(llm_output: str):
 @socketio.on("frame_data")
 def handle_frame(data):
     global LATEST_FRAME
+    global POSITION_STATUS
     try:
         print("Frame received")
 
@@ -424,11 +495,11 @@ def handle_frame(data):
             print("Invalid VM response:", result)
             return
         text = enforce_schema(text)
-        safety_status = text.get("saftey_status")
+        safety_status = text.get("safety_status")
         num_people = text.get("count_people")
         num_people = int(num_people)
 
-        if (num_people >= 1) and (POSITION_STATUS is not None):
+        if (num_people >= 0) and (POSITION_STATUS is not None):
             generate_tts_audio(POSITION_STATUS)
             POSITION_STATUS = None
 
