@@ -8,12 +8,16 @@ import threading
 from ws import safe_send, responses, responses_lock, init_ws
 from tts_service import generate_tts_audio
 import base64
-import numpy as np 
+import numpy as np
 import cv2
-import os 
-import yaml 
-from pathlib import Path 
+import os
+import yaml
+from pathlib import Path
 
+import json
+from jsonschema import validate, ValidationError
+
+# -------------------------CONFIG----------------------------------
 ROOT_DIR = Path(__file__).parents[1]
 CONFIG_FILE = ROOT_DIR / "config.yaml"
 
@@ -25,9 +29,11 @@ IMAGE_FOLDER = DATA_FOLDER / CONFIG["IMAGE_STORE_FOLDER"]
 PAIN_LOG_FOLDER = DATA_FOLDER / "pain_log"
 
 os.makedirs(DATA_FOLDER, exist_ok=True)
-os.makedirs(IMAGE_FOLDER, exist_ok=True) 
-os.makedirs(PAIN_LOG_FOLDER, exist_ok=True) 
-#Initialize the websocket.
+os.makedirs(IMAGE_FOLDER, exist_ok=True)
+os.makedirs(PAIN_LOG_FOLDER, exist_ok=True)
+
+
+# Initialize the websocket.
 init_ws()
 
 app = Flask(__name__)
@@ -35,17 +41,35 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
 story_history = []
-
+global LATEST_FRAME, POSITION_STATUS
+LATEST_FRAME = None
+POSITION_STATUS = None
 PREVIOUS_QA = {}
-#webpage
+
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "safety_status": {"type": "string", "enum": ["safe", "unsafe"]},
+        "count_people": {"type": "integer", "minimum": 0},
+        "reason": {"type": "string", "minLength": 3, "maxLength": 50},
+    },
+    "required": ["safety_status", "count_people", "reason"],
+    "additionalProperties": False,
+}
+
+
+# webpage
 @app.route("/")
 def index():
     return render_template("home.html")
 
+
 @socketio.on("gaze_data")
 def handle_gaze(data):
     socketio.emit("cursor_move", data, broadcast=True)
-    
+
+
 @socketio.on("sentence")
 def select(data):
     intent = data.get("sentence")
@@ -58,11 +82,9 @@ def select(data):
     request_id = str(uuid.uuid4())
 
     # send to VM
-    safe_send(json.dumps({
-        "request_id": request_id,
-        "text": intent,
-        "request": "sentence"
-    }))
+    safe_send(
+        json.dumps({"request_id": request_id, "text": intent, "request": "sentence"})
+    )
 
     # wait for response
     timeout = 120
@@ -78,9 +100,7 @@ def select(data):
 
     # timeout case
     if result is None:
-        socketio.emit("sentence_error", {
-            "error": "VM timeout"
-        })
+        socketio.emit("sentence_error", {"error": "VM timeout"})
         return
 
     # generate TTS
@@ -91,7 +111,8 @@ def select(data):
     #     "text": result["text"],
     #     "audio": audio_path
     # })
-    
+
+
 @socketio.on("phrase_selected")
 def handle_phrase(data):
     print(data)
@@ -104,11 +125,9 @@ def handle_phrase(data):
     request_id = str(uuid.uuid4())
 
     # 🔹 Send request to VM
-    safe_send(json.dumps({
-        "request_id": request_id,
-        "text": phrase,
-        "request":"phrase"
-    }))
+    safe_send(
+        json.dumps({"request_id": request_id, "text": phrase, "request": "phrase"})
+    )
 
     # 🔹 Tell UI we're processing (important for gaze UX)
     socketio.emit("loading", {"status": "processing"}, to=request.sid)
@@ -129,15 +148,12 @@ def handle_phrase(data):
 
     # 🔴 Timeout case
     if result is None:
-        socketio.emit("error", {
-            "message": "VM timeout"
-        }, to=request.sid)
+        socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
         return
 
     # 🟢 Success case
-    socketio.emit("new_phrases", {
-        "phrases": result
-    }, to=request.sid)
+    socketio.emit("new_phrases", {"phrases": result}, to=request.sid)
+
 
 @socketio.on("select_text")
 def handle_select_text(data):
@@ -146,54 +162,94 @@ def handle_select_text(data):
     """
 
     text = (data.get("text") or "").strip()
+    global POSITION_STATUS
     if "Position" in text:
-        generate_tts_audio("I have a problem with my seating position.")
+        request_id = str(uuid.uuid4())
+
+        safe_send(
+            json.dumps(
+                {
+                    "request_id": request_id,
+                    "text": "",
+                    "image_for_intent": LATEST_FRAME,
+                    "request": "position",
+                }
+            )
+        )
+
+        timeout = 120
+        start = time.time()
+
+        result = None
+
+        while time.time() - start < timeout:
+
+            with responses_lock:
+                if request_id in responses:
+                    result = responses.pop(request_id)
+                    break
+
+        if result is None:
+            socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
+            return
+        POSITION_STATUS = result["text"]
+
     elif "Breathing" in text:
         generate_tts_audio("I cannot breathe properly !")
     elif "Others" in text:
         generate_tts_audio("I am thirsty !")
     elif "Medication" in text:
-        generate_tts_audio("I need to take my medication.") 
+        generate_tts_audio("I need to take my medication.")
     else:
-        generate_tts_audio("I need to") 
+        generate_tts_audio("I need to")
+
 
 @socketio.on("pain_gq")
 def handle_select_text(data):
-
     """
     Function to handle Guided Questioning for Pain related Issues.
-    
+
     """
     question = data.get("question")
     answer = data.get("answer")
-    
-    answer = answer.replace("\n","")
-    print(answer.strip().lower())
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    PREVIOUS_QA.update({question:answer})
-    print(PREVIOUS_QA)
-    query_to_llm = [f"Previous Question-{index} : {key}, Previous Answer-{index}: {value}" for index, (key, value) in enumerate(PREVIOUS_QA.items())]
 
-    query_to_llm= " ".join(query_to_llm)
-    
-    with open(f"{IMAGE_FOLDER}\\frame_latest.txt", "r") as file:
-        image_in_str = file.read()
+    answer = answer.replace("\n", "")
+
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    PREVIOUS_QA.update({question: answer})
+
+    query_to_llm = [
+        f"Previous Question-{index} : {key}, Previous Answer-{index}: {value}"
+        for index, (key, value) in enumerate(PREVIOUS_QA.items())
+    ]
+
+    query_to_llm = " ".join(query_to_llm)
+
+    image_in_str = LATEST_FRAME
 
     request_id = str(uuid.uuid4())
-    if answer.strip().lower()=="end":
-        safe_send(json.dumps({
-        "request_id": request_id,
-        "text": query_to_llm,
-        "image_for_intent": image_in_str,
-        "request":"pain_end"
-    }))
+    if answer.strip().lower() == "end":
+        safe_send(
+            json.dumps(
+                {
+                    "request_id": request_id,
+                    "text": query_to_llm,
+                    "image_for_intent": image_in_str,
+                    "request": "pain_end",
+                }
+            )
+        )
     else:
-        safe_send(json.dumps({
-            "request_id": request_id,
-            "text": query_to_llm,
-            "image_for_intent": image_in_str,
-            "request":"pain"
-        }))
+        safe_send(
+            json.dumps(
+                {
+                    "request_id": request_id,
+                    "text": query_to_llm,
+                    "image_for_intent": image_in_str,
+                    "request": "pain",
+                }
+            )
+        )
 
     ##Not Implemented
     socketio.emit("loading", {"status": "processing"}, to=request.sid)
@@ -211,29 +267,24 @@ def handle_select_text(data):
                 break
 
     if result is None:
-        socketio.emit("error", {
-            "message": "VM timeout"
-        }, to=request.sid)
+        socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
         return
-    
-    socketio.emit("new_question", {
-        "question": result
-    }, to=request.sid)
+
+    socketio.emit("new_question", {"question": result}, to=request.sid)
 
     if answer.strip().lower() == "end":
-        with open(f"{PAIN_LOG_FOLDER}\\logs.txt","a+") as file:
+        with open(f"{PAIN_LOG_FOLDER}\\logs.txt", "a+") as file:
             message = f"{timestamp}\n{result["text"]}"
             file.write(message)
         print("Saved to file.")
 
+
 def process_story_request(sid, request_id, text):
     try:
         # Send to your VM / model
-        safe_send(json.dumps({
-            "request_id": request_id,
-            "text": text,
-            "request": "story"
-        }))
+        safe_send(
+            json.dumps({"request_id": request_id, "text": text, "request": "story"})
+        )
 
         timeout = 120
         start = time.time()
@@ -263,10 +314,10 @@ def process_story_request(sid, request_id, text):
                 "options": [
                     "Tell me more about the live longer",
                     "Tell me more about the live longer",
-                    "Also more about the live longer."
+                    "Also more about the live longer.",
                 ]
             },
-            to=sid
+            to=sid,
         )
 
         # 🔑 UNLOCK CLIENT
@@ -276,6 +327,7 @@ def process_story_request(sid, request_id, text):
         print("❌ Error:", e)
         socketio.emit("error", {"message": "Server error"}, to=sid)
         socketio.emit("story_ack", {}, to=sid)
+
 
 @socketio.on("story_text")
 def handle_select_text(data):
@@ -298,16 +350,12 @@ def handle_select_text(data):
     socketio.emit("loading", {"status": "processing"}, to=sid)
 
     # 🔥 IMPORTANT: run async
-    socketio.start_background_task(
-        process_story_request,
-        sid,
-        request_id,
-        text
-    )
+    socketio.start_background_task(process_story_request, sid, request_id, text)
 
-#Gaze Tracker
-#Connection between the gaze detection file and the webpage.
-#this socket helps in  communicating the gaze data to the webpage.
+
+# Gaze Tracker
+# Connection between the gaze detection file and the webpage.
+# this socket helps in  communicating the gaze data to the webpage.
 @socketio.on("gaze_data")
 def handle_gaze(data):
     x = data.get("x")
@@ -315,30 +363,42 @@ def handle_gaze(data):
 
     print("Received gaze:", x, y)
 
-    socketio.emit("cursor_move", {
-        "x": x,
-        "y": y
-    })
+    socketio.emit("cursor_move", {"x": x, "y": y})
+
+
+def enforce_schema(llm_output: str):
+    try:
+        data = json.loads(llm_output)
+        validate(instance=data, schema=SCHEMA)
+        return data  # valid
+    except (json.JSONDecodeError, ValidationError):
+        return None  #
+
 
 @socketio.on("frame_data")
 def handle_frame(data):
+    global LATEST_FRAME
     try:
         print("Frame received")
 
         if not data:
             return
-        
-        with open(f"{IMAGE_FOLDER}/frame_latest.txt","w") as file:
-            file.write(data["image"])
+
+        LATEST_FRAME = data["image"]
         print("Saved Latest Frame")
 
         request_id = str(uuid.uuid4())
-        safe_send(json.dumps({
-        "request_id": request_id,
-        "text": data["image"],
-        "request":"image"
-        }))
-    
+        safe_send(
+            json.dumps(
+                {
+                    "request_id": request_id,
+                    "text": "",
+                    "image_as_str": LATEST_FRAME,
+                    "request": "image",
+                }
+            )
+        )
+
         print("Frame sent to VM")
 
         timeout = 120
@@ -358,22 +418,27 @@ def handle_frame(data):
             socketio.emit("error", {"message": "Image processing timeout"})
             return
 
-        # ❗ SAFETY CHECK
+        #
         text = result.get("text") or result.get("response")
         if not text:
             print("Invalid VM response:", result)
             return
-        print(text)
-        # generate_tts_audio(text, voice="not default")
+        text = enforce_schema(text)
+        safety_status = text.get("saftey_status")
+        num_people = text.get("count_people")
+        num_people = int(num_people)
+
+        if (num_people >= 1) and (POSITION_STATUS is not None):
+            generate_tts_audio(POSITION_STATUS)
+            POSITION_STATUS = None
+
+        if safety_status.lower() == "unsafe":
+            pass
+            ## Caretaker Integration
 
     except Exception as e:
         print("Error handling frame:", e)
 
 
 if __name__ == "__main__":
-    socketio.run(
-    app,
-    host="127.0.0.1",
-    port=5050,
-    debug=True
-)
+    socketio.run(app, host="127.0.0.1", port=5050, debug=True)
