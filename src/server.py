@@ -545,6 +545,33 @@ def handle_frame(data):
     except Exception as e:
         print("Error handling frame:", e)
 
+@socketio.on("get_summary")
+def handle_get_summary(data:dict)->dict:
+
+    breathing_related_info = data.get("bc")
+    pain_related_info = data.get("pc")
+    medication_related_info = data.get("mc")
+    position_related_info = data.get("oc")
+
+    message = f"""Breathing Logs: {breathing_related_info}\n
+                  Pain Logs: {pain_related_info}\n
+                  Medication Logs: {medication_related_info}\n
+                  Position Logs: {position_related_info}"""
+    result = send_vm_request(
+            socketio=socketio,
+            sid=request.sid,
+            safe_send=safe_send,
+            responses=responses,
+            responses_lock=responses_lock,
+            request_type="summary",
+            text=message,
+            image=None,
+            timeout=120,
+    )
+    if result is None:
+        return
+
+    socketio.emit("analysis_result", result)
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5050, debug=True)
