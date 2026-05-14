@@ -19,18 +19,19 @@ async def ws_endpoint(websocket: WebSocket):
         try:
             while True:
                 data = await websocket.receive_json()
-
+                print(data.keys())
                 request_id = data.get("request_id")
-                user_request = data.get("request")
-                user_text = data.get("text")
+                payload = {
+                    "text": data.get("text"),
+                    "user_request": data.get("request"),
+                    "image_for_intent": data.get("image_for_intent", None) #optional
+                }
+                
                 try:
                     async with SEM:
                         resp = await client.post(
                             GEMMA_URL,
-                            json={
-                                "text": user_text,
-                                "user_request": user_request
-                            },
+                            json=payload,
                         )
 
                     # ❗ check HTTP status
@@ -44,7 +45,7 @@ async def ws_endpoint(websocket: WebSocket):
 
                     result = resp.json()
 
-                    # ❗ safe parsing
+                    #  parsing
                     text = (
                         result.get("response")
                         or result.get("text")
@@ -62,7 +63,7 @@ async def ws_endpoint(websocket: WebSocket):
                     await websocket.send_json({
                         "request_id": request_id,
                         "text": text,
-                        "input": user_text,
+                        "input": payload["text"],
                         "latency_llm": result.get("latency_ms"),
                         "done": True,
                     })

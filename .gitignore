@@ -2,3 +2,5 @@
 /frames
 /src/__pycache__
 /data
+/src/gemma_service/__pycache__
+/src/gemma_service/frames

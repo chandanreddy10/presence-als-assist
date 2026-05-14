@@ -1,0 +1,3 @@
+Generate Next question based on previous question and answers. Output Next question as a string.
+Previous question are in the fromat Previous question-{number}, Previous answer -{number}
+Do not use other formatting. Only string

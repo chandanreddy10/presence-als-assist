@@ -1,118 +1,154 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
+
 from ollama import chat
 import time
 from pathlib import Path
 
 import base64
-import numpy as np 
+import numpy as np
 import cv2
-import os 
+import os
+
+# ----------------------------
+# INIT
+# ----------------------------
+
+app = FastAPI()
 
 PROMPTS_DIR = Path("prompts")
 SAVE_DIR = "frames"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
+# Load prompts
+with open(PROMPTS_DIR / "phrase.txt", "r") as f:
+    phrase_prompt = f.read()
 
-phrase_prompt = PROMPTS_DIR / "phrase.txt"
-sentence_prompt = PROMPTS_DIR / "sentence.txt"
+with open(PROMPTS_DIR / "sentence.txt", "r") as f:
+    sentence_prompt = f.read()
 
-with open(phrase_prompt, "r") as file:
-    phrase_prompt = file.read()
+with open(PROMPTS_DIR / "guided_QA.txt", "r") as f:
+    guided_qa_prompt = f.read()
 
-with open(sentence_prompt, "r") as file:
-    sentence_prompt = file.read()
 
-# gemma4 service to run on a VM supported by GPU.
-app = FastAPI()
-
+# ----------------------------
+# REQUEST MODEL
+# ----------------------------
 
 class LLMRequest(BaseModel):
     text: str
-    user_request: str
+    user_request: Optional[str] = None
+    image_for_intent: Optional[str] = None
 
 
-def run_gemma(prompt: str, request:str, image:str=False):
-    
-    start = time.time()
-    if not image:
-        response = chat(
-            model="gemma4:e2b", messages=[{"role": "user", "content": prompt}], stream=False
-        )
+# ----------------------------
+# IMAGE DECODER
+# ----------------------------
 
-        end = time.time()
-        if request == "phrase":
-            list_of_words = response.message.content.split(",")
-            list_of_words.append("End")
-            return {
-                "response": list_of_words,
-                "latency_ms": round((end - start) * 1000, 2),
-            }
-        else:
-            return {
-            "response": response.message.content,
-            "latency_ms": round((end - start) * 1000, 2),
-        }
-    elif image:
-        response = chat(
-        model="gemma4:e2b",
-        messages=[{
-            "role": "user",
-            "content":f"Output Yes if there is a person in the image",
-            "images":[f"{prompt}"]
-        }],
-        stream=False
-        )
-        end = time.time()
-
-        return {
-            "response": response.message.content,
-            "latency_ms": round((end - start) * 1000, 2),
-        }
-
-def decode_image_and_save_to_temp(jpg_as_text):
-     # 1. decode base64 string
-    img_data = base64.b64decode(jpg_as_text)
-
-    # 2. convert to numpy array
+def decode_image_and_save_to_temp(image_base64: str) -> str:
+    img_data = base64.b64decode(image_base64)
     nparr = np.frombuffer(img_data, np.uint8)
-
-    # 3. decode image
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # 4. save frame
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     filename = os.path.join(SAVE_DIR, f"frame_{timestamp}.jpg")
 
     cv2.imwrite(filename, frame)
-
     return filename
-# route signal decision hints at what the user intends and proceeds as required.
-## 2. Sentence generation
-## 3. Query
-## 4. Fun interaction.
 
+
+# ----------------------------
+# PROMPT BUILDER
+# ----------------------------
+
+def build_prompt(user_request: str, text: str) -> str:
+
+    if user_request == "phrase":
+        return f"{phrase_prompt}\nList of Words: {text}"
+
+    elif user_request == "sentence":
+        return f"{sentence_prompt}\nWords: {text}"
+
+    elif user_request == "story":
+        return f"Write a short 10-line story.\nGenre: {text}"
+
+    elif user_request == "image":
+        return "Is there a single person in the image?"
+
+    elif user_request == "pain":
+        return f"{guided_qa_prompt}\n{text}"
+
+    elif user_request == "pain_end":
+        return f"Summarize the text\n{text}"
+    
+    else:
+        return text
+
+def run_gemma(prompt: str, request: str, image_base64: Optional[str] = None):
+
+    start = time.time()
+
+    try:
+
+        # IMAGE PATH
+        if image_base64:
+            image_path = decode_image_and_save_to_temp(image_base64)
+
+            response = chat(
+                model="gemma4:e2b",
+                messages=[{
+                    "role": "user",
+                    "content": prompt,
+                    "images": [image_path]
+                }],
+                stream=False
+            )
+
+        # TEXT ONLY
+        else:
+            response = chat(
+                model="gemma4:e2b",
+                messages=[{
+                    "role": "user",
+                    "content": prompt
+                }],
+                stream=False
+            )
+
+        output = response.message.content
+
+        # special handling for phrase mode
+        if request == "phrase":
+            output = output.split(",") + ["End"]
+
+        return {
+            "response": output,
+            "latency_ms": round((time.time() - start) * 1000, 2)
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e),
+            "latency_ms": round((time.time() - start) * 1000, 2)
+        }
+
+
+# ----------------------------
+# API ENDPOINT
+# ----------------------------
 
 @app.post("/gemma")
 def gemma_endpoint(req: LLMRequest):
+
     text = req.text
-    user_request = req.user_request
+    user_request = (req.user_request or "").lower()
+    image = req.image_for_intent
 
-    if user_request.lower() == "phrase":
-        input_to_gemma = f"{phrase_prompt}\nList of Words selected by the patient : {text}"
-        return run_gemma(input_to_gemma, user_request.lower())
-    
-    elif user_request.lower() == "sentence":
-        input_to_gemma = f"{sentence_prompt}\n Words to build the sentence from : {text}"
-        return run_gemma(input_to_gemma, user_request.lower())
-    
-    elif user_request.lower() == "story":
-        input_to_gemma = f"Build a short story from the Genre 10 lines. Gnere:\n{text}"
-        return run_gemma(input_to_gemma, user_request.lower())
+    prompt = build_prompt(user_request, text)
 
-    elif user_request.lower() == "image":
-        input_to_gemma = decode_image_and_save_to_temp(text)
-        # input_to_gemma=text
-        return run_gemma(input_to_gemma, user_request.lower(), image=True)
-
-    
+    return run_gemma(
+        prompt=prompt,
+        request=user_request,
+        image_base64=image
+    )
