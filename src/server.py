@@ -27,11 +27,26 @@ with open(CONFIG_FILE, "r") as file:
 DATA_FOLDER = ROOT_DIR / CONFIG["DATA_STORE_FOLDER"]
 IMAGE_FOLDER = DATA_FOLDER / CONFIG["IMAGE_STORE_FOLDER"]
 PAIN_LOG_FOLDER = DATA_FOLDER / "pain_log"
+POSITION_LOG_FOLDER = DATA_FOLDER / "position_log"
+BREATHING_LOG_FOLDER = DATA_FOLDER / "breathing_log"
+MEDICATION_LOG_FOLDER = DATA_FOLDER / "medication_log"
+
+global LATEST_FRAME, POSITION_STATUS, BREATHING_STATUS, MEDICATION_STATUS
+
+LATEST_FRAME = None
+POSITION_STATUS = None
+BREATHING_STATUS = None
+MEDICATION_STATUS = None
+PREVIOUS_QA = {}
 
 os.makedirs(DATA_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 os.makedirs(PAIN_LOG_FOLDER, exist_ok=True)
+os.makedirs(POSITION_LOG_FOLDER, exist_ok=True)
+os.makedirs(BREATHING_LOG_FOLDER, exist_ok=True)
+os.makedirs(MEDICATION_LOG_FOLDER, exist_ok=True)
 
+TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
 
 # Initialize the websocket.
 init_ws()
@@ -41,12 +56,6 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
 story_history = []
-global LATEST_FRAME, POSITION_STATUS, BREATHING_STATUS, MEDICATION_STATUS
-LATEST_FRAME = None
-POSITION_STATUS = None
-BREATHING_STATUS = None
-PREVIOUS_QA = {}
-
 
 SCHEMA = {
     "type": "object",
@@ -285,7 +294,6 @@ def handle_select_text(data):
 
     answer = answer.replace("\n", "")
 
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
     PREVIOUS_QA.update({question: answer})
 
     query_to_llm = [
@@ -344,14 +352,14 @@ def handle_select_text(data):
 
     if answer.strip().lower() == "end":
         with open(f"{PAIN_LOG_FOLDER}\\logs.txt", "a+") as file:
-            message = f"{timestamp}\n{result["text"]}"
+            message = f"{TIMESTAMP}\n{result["text"]}"
             file.write(message)
         print("Saved to file.")
 
 
 def process_story_request(sid, request_id, text):
     try:
-        # Send to your VM / model
+        # Send to VM / model
         safe_send(
             json.dumps({"request_id": request_id, "text": text, "request": "story"})
         )
@@ -422,7 +430,11 @@ def handle_select_text(data):
     # 🔥 IMPORTANT: run async
     socketio.start_background_task(process_story_request, sid, request_id, text)
 
-
+def write_output_to_file(FILE_PATH : str, text:str, TIMESTAMP=TIMESTAMP):
+    with open(FILE_PATH, "a+") as file:
+        message = f"{TIMESTAMP}\n{text}"
+        file.write(message)
+    
 # Gaze Tracker
 # Connection between the gaze detection file and the webpage.
 # this socket helps in  communicating the gaze data to the webpage.
@@ -449,6 +461,9 @@ def enforce_schema(llm_output: str):
 def handle_frame(data):
     global LATEST_FRAME
     global POSITION_STATUS
+    global BREATHING_STATUS
+    global MEDICATION_STATUS 
+    
     try:
         print("Frame received")
 
@@ -500,8 +515,25 @@ def handle_frame(data):
         num_people = int(num_people)
 
         if (num_people >= 0) and (POSITION_STATUS is not None):
+
             generate_tts_audio(POSITION_STATUS)
+            write_output_to_file(f"{POSITION_LOG_FOLDER}\\logs.txt", text=POSITION_STATUS)
+       
             POSITION_STATUS = None
+        
+        if (num_people >= 0) and (BREATHING_STATUS is not None):
+            
+            generate_tts_audio(BREATHING_STATUS)
+            write_output_to_file(f"{BREATHING_LOG_FOLDER}\\logs.txt", text=BREATHING_STATUS)
+
+            BREATHING_STATUS = None
+        
+        if (num_people >= 0) and (MEDICATION_STATUS is not None):
+            
+            generate_tts_audio(MEDICATION_STATUS)
+            write_output_to_file(f"{MEDICATION_LOG_FOLDER}\\logs.txt", text=MEDICATION_STATUS)
+
+            MEDICATION_STATUS = None
 
         if safety_status.lower() == "unsafe":
             pass
