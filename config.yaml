@@ -1,3 +1,5 @@
 DATA_STORE_FOLDER: "data"
 IMAGE_STORE_FOLDER: "images"
 MODEL: "gemma4:e2b"
+#all prompt paths
+#
