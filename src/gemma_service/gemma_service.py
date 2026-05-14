@@ -40,6 +40,9 @@ with open(PROMPTS_DIR / "breathing_prompt.txt", "r") as f:
 with open(PROMPTS_DIR / "medication_prompt.txt", "r") as f:
     medication_prompt = f.read()
 
+with open(PROMPTS_DIR / "summary_prompt.txt", "r") as f:
+    summary_prompt = f.read()
+
 class LLMRequest(BaseModel):
     text: str
     user_request: Optional[str] = None
@@ -86,6 +89,9 @@ def build_prompt(user_request: str, text: str) -> str:
     
     elif user_request == "medication":
         return f"{medication_prompt}"
+    
+    elif user_request == "summary":
+        return f"{summary_prompt} Logs: {text}"
     
     else:
         return text
