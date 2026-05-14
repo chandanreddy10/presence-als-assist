@@ -39,13 +39,6 @@ BREATHING_STATUS = None
 MEDICATION_STATUS = None
 PREVIOUS_QA = {}
 
-os.makedirs(DATA_FOLDER, exist_ok=True)
-os.makedirs(IMAGE_FOLDER, exist_ok=True)
-os.makedirs(PAIN_LOG_FOLDER, exist_ok=True)
-os.makedirs(POSITION_LOG_FOLDER, exist_ok=True)
-os.makedirs(BREATHING_LOG_FOLDER, exist_ok=True)
-os.makedirs(MEDICATION_LOG_FOLDER, exist_ok=True)
-
 TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
 
 # Initialize the websocket.
@@ -68,6 +61,16 @@ SCHEMA = {
     "additionalProperties": False,
 }
 
+
+def make_dir(dest:str):
+    os.makedirs(dest, exist_ok=True)
+
+make_dir(DATA_FOLDER)
+make_dir(IMAGE_FOLDER)
+make_dir(PAIN_LOG_FOLDER)
+make_dir(POSITION_LOG_FOLDER)
+make_dir(BREATHING_LOG_FOLDER)
+make_dir(MEDICATION_LOG_FOLDER)
 
 def send_vm_request(
     socketio,
@@ -463,7 +466,7 @@ def handle_frame(data):
     global POSITION_STATUS
     global BREATHING_STATUS
     global MEDICATION_STATUS 
-    
+
     try:
         print("Frame received")
 
