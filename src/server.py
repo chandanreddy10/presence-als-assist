@@ -22,10 +22,11 @@ with open(CONFIG_FILE, "r") as file:
 
 DATA_FOLDER = ROOT_DIR / CONFIG["DATA_STORE_FOLDER"]
 IMAGE_FOLDER = DATA_FOLDER / CONFIG["IMAGE_STORE_FOLDER"]
+PAIN_LOG_FOLDER = DATA_FOLDER / "pain_log"
 
 os.makedirs(DATA_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True) 
-
+os.makedirs(PAIN_LOG_FOLDER, exist_ok=True) 
 #Initialize the websocket.
 init_ws()
 
@@ -145,9 +146,7 @@ def handle_select_text(data):
     """
 
     text = (data.get("text") or "").strip()
-    if "Pain" in text:
-        generate_tts_audio("I am feeling Pain.")
-    elif "Position" in text:
+    if "Position" in text:
         generate_tts_audio("I have a problem with my seating position.")
     elif "Breathing" in text:
         generate_tts_audio("I cannot breathe properly !")
@@ -168,21 +167,33 @@ def handle_select_text(data):
     question = data.get("question")
     answer = data.get("answer")
     
+    answer = answer.replace("\n","")
+    print(answer.strip().lower())
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
     PREVIOUS_QA.update({question:answer})
-    query_to_llm = [f"Question : {key}, Answer: {value}" for key, value in PREVIOUS_QA]
+    print(PREVIOUS_QA)
+    query_to_llm = [f"Previous Question-{index} : {key}, Previous Answer-{index}: {value}" for index, (key, value) in enumerate(PREVIOUS_QA.items())]
 
-    query_to_llm = " ".join(query_to_llm)
+    query_to_llm= " ".join(query_to_llm)
     
-    with open(f"{IMAGE_FOLDER}/latest_frame.txt", "r") as file:
+    with open(f"{IMAGE_FOLDER}\\frame_latest.txt", "r") as file:
         image_in_str = file.read()
 
     request_id = str(uuid.uuid4())
-    safe_send(json.dumps({
+    if answer.strip().lower()=="end":
+        safe_send(json.dumps({
         "request_id": request_id,
         "text": query_to_llm,
-        "image": image_in_str,
-        "request":"pain"
+        "image_for_intent": image_in_str,
+        "request":"pain_end"
     }))
+    else:
+        safe_send(json.dumps({
+            "request_id": request_id,
+            "text": query_to_llm,
+            "image_for_intent": image_in_str,
+            "request":"pain"
+        }))
 
     ##Not Implemented
     socketio.emit("loading", {"status": "processing"}, to=request.sid)
@@ -193,7 +204,6 @@ def handle_select_text(data):
     result = None
 
     while time.time() - start < timeout:
-        socketio.sleep(0.05)  # Non-blocking
 
         with responses_lock:
             if request_id in responses:
@@ -205,11 +215,16 @@ def handle_select_text(data):
             "message": "VM timeout"
         }, to=request.sid)
         return
-
+    
     socketio.emit("new_question", {
-        "question": question
+        "question": result
     }, to=request.sid)
 
+    if answer.strip().lower() == "end":
+        with open(f"{PAIN_LOG_FOLDER}\\logs.txt","a+") as file:
+            message = f"{timestamp}\n{result["text"]}"
+            file.write(message)
+        print("Saved to file.")
 
 def process_story_request(sid, request_id, text):
     try:
@@ -225,7 +240,6 @@ def process_story_request(sid, request_id, text):
         result = None
 
         while time.time() - start < timeout:
-            socketio.sleep(0.05)
 
             with responses_lock:
                 if request_id in responses:
@@ -319,13 +333,12 @@ def handle_frame(data):
         print("Saved Latest Frame")
 
         request_id = str(uuid.uuid4())
-
         safe_send(json.dumps({
-            "request_id": request_id,
-            "text": data["image"],
-            "request": "image"
+        "request_id": request_id,
+        "text": data["image"],
+        "request":"image"
         }))
-
+    
         print("Frame sent to VM")
 
         timeout = 120
@@ -333,8 +346,7 @@ def handle_frame(data):
         result = None
 
         while time.time() - start < timeout:
-            socketio.sleep(0.05)
-
+            socketio.sleep(1)
             with responses_lock:
                 if request_id in responses:
                     result = responses.pop(request_id)
@@ -351,7 +363,7 @@ def handle_frame(data):
         if not text:
             print("Invalid VM response:", result)
             return
-
+        print(text)
         # generate_tts_audio(text, voice="not default")
 
     except Exception as e:
@@ -359,4 +371,9 @@ def handle_frame(data):
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="127.0.0.1", port=5050, debug=True)
+    socketio.run(
+    app,
+    host="127.0.0.1",
+    port=5050,
+    debug=True
+)

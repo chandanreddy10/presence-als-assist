@@ -95,7 +95,7 @@ function triggerGazeAction(element) {
     const question = document.getElementById("questionText").innerText;
     
     // CASE 2: ALS phrase selection (NEW)
-    if (text) {
+    if (answer) {
         socket_pain.emit("pain_gq", {
             answer: answer,
             question: question
@@ -111,6 +111,20 @@ function resetGazeState() {
     dwellStart = null;
     alreadyTriggered = false;
 }
+socket_pain.on("new_question", (data) => {
+  console.log(data);
+  const incoming = data.question.text;
+  const el = document.getElementById("questionText");
 
+  console.log(incoming);
+  if (!incoming || !el) return;
+
+  el.style.opacity = 0;
+
+  setTimeout(() => {
+    el.innerText = incoming;
+    el.style.opacity = 1;
+  }, 10);
+});
 // Init automatically on load
 window.addEventListener("DOMContentLoaded", ensureCursor);

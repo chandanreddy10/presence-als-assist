@@ -1,4 +1,4 @@
-const DWELL_TIME = 3000;
+const DWELL_TIME = 2000;
 const HIT_PADDING = 10;
 
 let hoveredElement = null;
