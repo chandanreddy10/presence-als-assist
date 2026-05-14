@@ -39,13 +39,6 @@ BREATHING_STATUS = None
 MEDICATION_STATUS = None
 PREVIOUS_QA = {}
 
-os.makedirs(DATA_FOLDER, exist_ok=True)
-os.makedirs(IMAGE_FOLDER, exist_ok=True)
-os.makedirs(PAIN_LOG_FOLDER, exist_ok=True)
-os.makedirs(POSITION_LOG_FOLDER, exist_ok=True)
-os.makedirs(BREATHING_LOG_FOLDER, exist_ok=True)
-os.makedirs(MEDICATION_LOG_FOLDER, exist_ok=True)
-
 TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
 
 # Initialize the websocket.
@@ -68,6 +61,16 @@ SCHEMA = {
     "additionalProperties": False,
 }
 
+
+def make_dir(dest:str):
+    os.makedirs(dest, exist_ok=True)
+
+make_dir(DATA_FOLDER)
+make_dir(IMAGE_FOLDER)
+make_dir(PAIN_LOG_FOLDER)
+make_dir(POSITION_LOG_FOLDER)
+make_dir(BREATHING_LOG_FOLDER)
+make_dir(MEDICATION_LOG_FOLDER)
 
 def send_vm_request(
     socketio,
@@ -463,7 +466,7 @@ def handle_frame(data):
     global POSITION_STATUS
     global BREATHING_STATUS
     global MEDICATION_STATUS 
-    
+
     try:
         print("Frame received")
 
@@ -542,6 +545,33 @@ def handle_frame(data):
     except Exception as e:
         print("Error handling frame:", e)
 
+@socketio.on("get_summary")
+def handle_get_summary(data:dict)->dict:
+
+    breathing_related_info = data.get("bc")
+    pain_related_info = data.get("pc")
+    medication_related_info = data.get("mc")
+    position_related_info = data.get("oc")
+
+    message = f"""Breathing Logs: {breathing_related_info}\n
+                  Pain Logs: {pain_related_info}\n
+                  Medication Logs: {medication_related_info}\n
+                  Position Logs: {position_related_info}"""
+    result = send_vm_request(
+            socketio=socketio,
+            sid=request.sid,
+            safe_send=safe_send,
+            responses=responses,
+            responses_lock=responses_lock,
+            request_type="summary",
+            text=message,
+            image=None,
+            timeout=120,
+    )
+    if result is None:
+        return
+
+    socketio.emit("analysis_result", result)
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5050, debug=True)
