@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="../static/socket.js"></script>
+<script src="../static/pain.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Atkinson Hyperlegible Next", sans-serif;
+}
+
+.gaze-target {
+  transition: all 0.25s ease;
+}
+
+.gaze-target:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(0,0,0,0.08);
+}
+
+.glass {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+#questionText {
+  transition: opacity 0.3s ease;
+}
+</style>
+</head>
+
+<body class="bg-[#fbf9f8]">
+
+<!-- HEADER -->
+<header class="gaze-target fixed top-0 left-0 w-full flex justify-between items-center px-10 py-6 bg-white shadow-sm z-50", data-href="./intent_expansion.html">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-[40px] text-red-500">healing</span>
+    <h1 class="text-2xl font-bold text-gray-800">Pain Assistance</h1>
+  </div>
+
+  <button class="gaze-target w-[60px] h-[60px] rounded-full bg-gray-100 flex items-center justify-center">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+</header>
+
+<!-- MAIN -->
+<main class="pt-[120px] h-screen flex flex-col items-center justify-center px-10">
+
+  <!-- QUESTION / LLM OUTPUT AREA -->
+  <div class="glass w-[1000px] min-h-[320px] rounded-2xl p-12 flex items-center justify-center text-center">
+    <h1 id="questionText" class="text-4xl font-semibold text-gray-800 leading-snug">
+      Tell me where the pain is strongest right now. Tell me where the pain is strongest right now. Tell me where the pain is strongest right now. Tell me where the pain is strongest right now.
+    </h1>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="flex gap-12 mt-14">
+
+    <!-- YES -->
+    <button class="gaze-target w-[200px] h-[140px] rounded-2xl bg-green-100 text-green-700 text-3xl font-bold">
+      YES
+    </button>
+
+    <!-- NO -->
+    <button class="gaze-target w-[200px] h-[140px] rounded-2xl bg-red-100 text-red-700 text-3xl font-bold">
+      NO
+    </button>
+
+    <!-- END -->
+    <button class="gaze-target w-[200px] h-[140px] rounded-2xl bg-gray-200 text-gray-800 text-3xl font-bold">
+      END
+    </button>
+
+  </div>
+
+</main>

@@ -11,6 +11,20 @@ import base64
 import numpy as np 
 import cv2
 import os 
+import yaml 
+from pathlib import Path 
+
+ROOT_DIR = Path(__file__).parents[1]
+CONFIG_FILE = ROOT_DIR / "config.yaml"
+
+with open(CONFIG_FILE, "r") as file:
+    CONFIG = yaml.safe_load(file)
+
+DATA_FOLDER = ROOT_DIR / CONFIG["DATA_STORE_FOLDER"]
+IMAGE_FOLDER = DATA_FOLDER / CONFIG["IMAGE_STORE_FOLDER"]
+
+os.makedirs(DATA_FOLDER, exist_ok=True)
+os.makedirs(IMAGE_FOLDER, exist_ok=True) 
 
 #Initialize the websocket.
 init_ws()
@@ -20,6 +34,8 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
 story_history = []
+
+PREVIOUS_QA = {}
 #webpage
 @app.route("/")
 def index():
@@ -135,10 +151,65 @@ def handle_select_text(data):
         generate_tts_audio("I have a problem with my seating position.")
     elif "Breathing" in text:
         generate_tts_audio("I cannot breathe properly !")
-    elif "Thirst" in text:
+    elif "Others" in text:
         generate_tts_audio("I am thirsty !")
     elif "Medication" in text:
         generate_tts_audio("I need to take my medication.") 
+    else:
+        generate_tts_audio("I need to") 
+
+@socketio.on("pain_gq")
+def handle_select_text(data):
+
+    """
+    Function to handle Guided Questioning for Pain related Issues.
+    
+    """
+    question = data.get("question")
+    answer = data.get("answer")
+    
+    PREVIOUS_QA.update({question:answer})
+    query_to_llm = [f"Question : {key}, Answer: {value}" for key, value in PREVIOUS_QA]
+
+    query_to_llm = " ".join(query_to_llm)
+    
+    with open(f"{IMAGE_FOLDER}/latest_frame.txt", "r") as file:
+        image_in_str = file.read()
+
+    request_id = str(uuid.uuid4())
+    safe_send(json.dumps({
+        "request_id": request_id,
+        "text": query_to_llm,
+        "image": image_in_str,
+        "request":"pain"
+    }))
+
+    ##Not Implemented
+    socketio.emit("loading", {"status": "processing"}, to=request.sid)
+
+    timeout = 120
+    start = time.time()
+
+    result = None
+
+    while time.time() - start < timeout:
+        socketio.sleep(0.05)  # Non-blocking
+
+        with responses_lock:
+            if request_id in responses:
+                result = responses.pop(request_id)
+                break
+
+    if result is None:
+        socketio.emit("error", {
+            "message": "VM timeout"
+        }, to=request.sid)
+        return
+
+    socketio.emit("new_question", {
+        "question": question
+    }, to=request.sid)
+
 
 def process_story_request(sid, request_id, text):
     try:
@@ -242,6 +313,10 @@ def handle_frame(data):
 
         if not data:
             return
+        
+        with open(f"{IMAGE_FOLDER}/frame_latest.txt","w") as file:
+            file.write(data["image"])
+        print("Saved Latest Frame")
 
         request_id = str(uuid.uuid4())
 
@@ -277,7 +352,7 @@ def handle_frame(data):
             print("Invalid VM response:", result)
             return
 
-        generate_tts_audio(text, voice="not default")
+        # generate_tts_audio(text, voice="not default")
 
     except Exception as e:
         print("Error handling frame:", e)

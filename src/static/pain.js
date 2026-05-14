@@ -1,4 +1,6 @@
-const DWELL_TIME = 3000;
+const socket_pain = window.socket;
+
+const DWELL_TIME = 1500;
 const HIT_PADDING = 10;
 
 let hoveredElement = null;
@@ -25,17 +27,13 @@ function ensureCursor() {
     }
 }
 
-// Socket connection (shared across all pages)
-const socket = io("http://127.0.0.1:5050", {
-    transports: ["websocket", "polling"]
-});
 
-socket.on("connect", () => {
+socket_pain.on("connect", () => {
     console.log("Gaze system connected");
 });
 
 // Cursor tracking
-socket.on("cursor_move", (data) => {
+socket_pain.on("cursor_move", (data) => {
 
     ensureCursor();
 
@@ -93,18 +91,14 @@ function checkGazeTargets(x, y) {
 // Action handler (GLOBAL navigation or intent)
 function triggerGazeAction(element) {
 
-    const href = element.firstElementChild.dataset.href;
-    const text = element.textContent;
-    // CASE 1: navigation
-    if (href) {
-        window.location.href = href;
-        return;
-    }
-
+    const answer = element.textContent;
+    const question = document.getElementById("questionText").innerText;
+    
     // CASE 2: ALS phrase selection (NEW)
     if (text) {
-        socket.emit("select_text", {
-            text: text
+        socket_pain.emit("pain_gq", {
+            answer: answer,
+            question: question
         });
 
         resetGazeState();

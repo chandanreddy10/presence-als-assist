@@ -4,7 +4,7 @@ import threading
 import time
 
 #The VM URL
-VM_WS_URL = "ws://34.138.112.50:8000/ws"
+VM_WS_URL = "ws://35.185.60.59:8000/ws"
 
 ws = None
 connected = False
@@ -37,7 +37,7 @@ def on_open(wsapp):
 
 
 def on_message(wsapp, message):
-    print("VM RAW:", message)
+    # print("VM RAW:", message)
 
     try:
         data = json.loads(message)
