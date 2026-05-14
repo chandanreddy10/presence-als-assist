@@ -11,9 +11,6 @@ import numpy as np
 import cv2
 import os
 
-# ----------------------------
-# INIT
-# ----------------------------
 
 app = FastAPI()
 
@@ -31,20 +28,23 @@ with open(PROMPTS_DIR / "sentence.txt", "r") as f:
 with open(PROMPTS_DIR / "guided_QA.txt", "r") as f:
     guided_qa_prompt = f.read()
 
+with open(PROMPTS_DIR / "unsafe_num_people.txt", "r") as f:
+    safety_people_count_prompt = f.read()
 
-# ----------------------------
-# REQUEST MODEL
-# ----------------------------
+with open(PROMPTS_DIR / "position_prompt.txt", "r") as f:
+    position_prompt = f.read()
+
+with open(PROMPTS_DIR / "breathing_prompt.txt", "r") as f:
+    breathing_prompt = f.read()
+
+with open(PROMPTS_DIR / "medication_prompt.txt", "r") as f:
+    medication_prompt = f.read()
 
 class LLMRequest(BaseModel):
     text: str
     user_request: Optional[str] = None
     image_for_intent: Optional[str] = None
 
-
-# ----------------------------
-# IMAGE DECODER
-# ----------------------------
 
 def decode_image_and_save_to_temp(image_base64: str) -> str:
     img_data = base64.b64decode(image_base64)
@@ -58,10 +58,6 @@ def decode_image_and_save_to_temp(image_base64: str) -> str:
     return filename
 
 
-# ----------------------------
-# PROMPT BUILDER
-# ----------------------------
-
 def build_prompt(user_request: str, text: str) -> str:
 
     if user_request == "phrase":
@@ -74,13 +70,22 @@ def build_prompt(user_request: str, text: str) -> str:
         return f"Write a short 10-line story.\nGenre: {text}"
 
     elif user_request == "image":
-        return "Is there a single person in the image?"
+        return f"{safety_people_count_prompt}"
 
     elif user_request == "pain":
         return f"{guided_qa_prompt}\n{text}"
 
     elif user_request == "pain_end":
         return f"Summarize the text\n{text}"
+    
+    elif user_request == "position":
+        return f"{position_prompt}"
+    
+    elif user_request == "breathing":
+        return f"{breathing_prompt}"
+    
+    elif user_request == "medication":
+        return f"{medication_prompt}"
     
     else:
         return text
@@ -132,11 +137,6 @@ def run_gemma(prompt: str, request: str, image_base64: Optional[str] = None):
             "error": str(e),
             "latency_ms": round((time.time() - start) * 1000, 2)
         }
-
-
-# ----------------------------
-# API ENDPOINT
-# ----------------------------
 
 @app.post("/gemma")
 def gemma_endpoint(req: LLMRequest):

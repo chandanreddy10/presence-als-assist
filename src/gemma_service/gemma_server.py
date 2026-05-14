@@ -19,7 +19,7 @@ async def ws_endpoint(websocket: WebSocket):
         try:
             while True:
                 data = await websocket.receive_json()
-                print(data.keys())
+                
                 request_id = data.get("request_id")
                 payload = {
                     "text": data.get("text"),
