@@ -33,7 +33,7 @@ def safe_send(message: str):
 def on_open(wsapp):
     global connected
     connected = True
-    print("✅ VM WebSocket connected")
+    print(" VM WebSocket connected")
 
 
 def on_message(wsapp, message):
@@ -58,7 +58,7 @@ def on_error(wsapp, error):
 def on_close(wsapp, close_status_code, close_msg):
     global connected
     connected = False
-    print("❌ VM WebSocket closed")
+    print("VM WebSocket closed")
 
 
 def start_ws():
@@ -86,6 +86,6 @@ def init_ws():
         time.sleep(0.1)
 
     if not connected:
-        print("❌ WebSocket NOT connected to VM")
+        print("WebSocket NOT connected to VM")
     else:
-        print("✅ WebSocket ready")
+        print("WebSocket ready")
