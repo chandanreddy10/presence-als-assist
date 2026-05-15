@@ -22,5 +22,3 @@ This repository contains the codebase for an assistive communication system desi
 - Ensure the GEMMA service VM is running before starting the server
 - WebSocket connections must be properly configured across all services
 - Gaze tracking module requires camera access and proper calibration
-
----
