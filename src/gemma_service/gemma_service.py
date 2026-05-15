@@ -19,29 +19,18 @@ SAVE_DIR = "frames"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Load prompts
-with open(PROMPTS_DIR / "phrase.txt", "r") as f:
-    phrase_prompt = f.read()
+def load_prompt(file_name: str, base_dir: Path) -> str:
+    with open(base_dir / file_name, "r") as f:
+        return f.read()
 
-with open(PROMPTS_DIR / "sentence.txt", "r") as f:
-    sentence_prompt = f.read()
-
-with open(PROMPTS_DIR / "guided_QA.txt", "r") as f:
-    guided_qa_prompt = f.read()
-
-with open(PROMPTS_DIR / "unsafe_num_people.txt", "r") as f:
-    safety_people_count_prompt = f.read()
-
-with open(PROMPTS_DIR / "position_prompt.txt", "r") as f:
-    position_prompt = f.read()
-
-with open(PROMPTS_DIR / "breathing_prompt.txt", "r") as f:
-    breathing_prompt = f.read()
-
-with open(PROMPTS_DIR / "medication_prompt.txt", "r") as f:
-    medication_prompt = f.read()
-
-with open(PROMPTS_DIR / "summary_prompt.txt", "r") as f:
-    summary_prompt = f.read()
+phrase_prompt = load_prompt("phrase.txt", PROMPTS_DIR)
+sentence_prompt = load_prompt("sentence.txt", PROMPTS_DIR)
+guided_qa_prompt = load_prompt("guided_QA.txt", PROMPTS_DIR)
+safety_people_count_prompt = load_prompt("unsafe_num_people.txt", PROMPTS_DIR)
+position_prompt = load_prompt("position_prompt.txt", PROMPTS_DIR)
+breathing_prompt = load_prompt("breathing_prompt.txt", PROMPTS_DIR)
+medication_prompt = load_prompt("medication_prompt.txt", PROMPTS_DIR)
+summary_prompt = load_prompt("summary_prompt.txt", PROMPTS_DIR)
 
 class LLMRequest(BaseModel):
     text: str
