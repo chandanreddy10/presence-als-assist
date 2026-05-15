@@ -1,27 +1,24 @@
 const socket_chat = window.socket;
 
-// ================================
-// STATE
-// ================================
+//Initialising the variables
 let sentence = [];
 let dynamicPhrases = [];
 let baseDisabled = false;
 
-// ================================
-// BASE PHRASES
-// ================================
+//Initialising the base phrases 
 const basePhrases = [
-  { id: "feel", text: "I feel", type: "emotion", x: "35%", y: "5%" },
-  { id: "need", text: "Need", type: "need", x: "5%", y: "25%" },
-  { id: "help", text: "Help", type: "urgent", x: "80%", y: "10%" },
-  { id: "water", text: "Water", type: "need", x: "25%", y: "65%" },
-  { id: "hungry", text: "Hungry", type: "need", x: "70%", y: "40%" },
-  { id: "thank", text: "Thank you", type: "social", x: "75%", y: "75%" }
+  { id: "Needs", text: "Need", type: "need", x: "10%", y: "10%" },
+  { id: "Medical", text: "Pain", type: "medical", x: "30%", y: "5%" },
+  { id: "Emotion", text: "I feel", type: "emotion", x: "55%", y: "10%" },
+  { id: "Family", text: "Family", type: "social", x: "80%", y: "20%" },
+  { id: "Friends", text: "Friend", type: "social", x: "15%", y: "45%" },
+  { id: "Routine", text: "Daily", type: "activity", x: "40%", y: "45%" },
+  { id: "Food", text: "Hungry", type: "need", x: "70%", y: "45%" },
+  { id: "Care", text: "Help", type: "urgent", x: "20%", y: "75%" },
+  { id: "Environment", text: "Room", type: "context", x: "65%", y: "75%" }
 ];
 
-// ================================
-// FIXED POSITIONS
-// ================================
+//Fixing the layout positions
 const layoutPositions = [
   { x: "10%", y: "20%" },
   { x: "30%", y: "20%" },
@@ -33,9 +30,7 @@ const layoutPositions = [
   { x: "70%", y: "50%" }
 ];
 
-// ================================
-// STYLE SYSTEM
-// ================================
+//Style
 function getStyle(type) {
   switch (type) {
     case "need":
@@ -53,9 +48,7 @@ function getStyle(type) {
   }
 }
 
-// ================================
-// PHRASE COMBINATION LOGIC
-// ================================
+//Phrase to display at the bottom of the screen.
 function allPhrases() {
 
   const selected = sentence.map((text, i) => {
@@ -68,7 +61,7 @@ function allPhrases() {
     };
   });
 
-  // 🚨 BASE ONLY EXISTS BEFORE FIRST SELECTION
+ 
   if (!baseDisabled) {
     return [...basePhrases, ...selected, ...dynamicPhrases];
   }
@@ -77,9 +70,7 @@ function allPhrases() {
   return [...selected, ...dynamicPhrases];
 }
 
-// ================================
-// RENDER
-// ================================
+//Render the new phrases
 function render() {
   const container = document.getElementById("phrase-container");
   if (!container) return;
@@ -150,26 +141,7 @@ function render_sentence() {
     container.appendChild(btn);
   });
 }
-// ================================
-// SELECTION LOGIC
-// ================================
-// function selectPhrase(text) {
-//   sentence.push(text);
 
-//   // 🚨 FIRST SELECTION DISABLES BASE PHRASES
-//   baseDisabled = true;
-
-//   socket_chat.emit("phrase_selected", {
-//     phrase: text,
-//     sentence: sentence
-//   });
-
-//   render();
-// }
-
-// ================================
-// SERVER UPDATES (FULL REPLACE)
-// ================================
 socket_chat.on("new_phrases", (data) => {
 //   console.log(data);
   const incoming = data.phrases.text;
@@ -190,16 +162,12 @@ socket_chat.on("new_phrases", (data) => {
   render_sentence();
 });
 
-// ================================
-// RESET
-// ================================
+//Reset the Sentence
 socket_chat.on("reset_sentence", () => {
   sentence = [];
-  baseDisabled = false; // 🔄 restore base screen
+  baseDisabled = false;
   render();
 });
 
-// ================================
-// INIT
-// ================================
+//Init
 window.addEventListener("DOMContentLoaded", render);

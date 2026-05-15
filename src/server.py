@@ -4,6 +4,7 @@ import time
 import uuid
 import json
 import threading
+from typing import List
 
 from ws import safe_send, responses, responses_lock, init_ws
 from tts_service import generate_tts_audio
@@ -37,7 +38,10 @@ LATEST_FRAME = None
 POSITION_STATUS = None
 BREATHING_STATUS = None
 MEDICATION_STATUS = None
+
+
 PREVIOUS_QA = {}
+PREVIOUS_WORDS = []
 
 TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
 
@@ -48,8 +52,9 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 lock = threading.Lock()
-story_history = []
+STORY_HISTORY = []
 
+# Enforcing schema for LLM Response for safety and num people tracking.
 SCHEMA = {
     "type": "object",
     "properties": {
@@ -62,8 +67,9 @@ SCHEMA = {
 }
 
 
-def make_dir(dest:str):
+def make_dir(dest: str):
     os.makedirs(dest, exist_ok=True)
+
 
 make_dir(DATA_FOLDER)
 make_dir(IMAGE_FOLDER)
@@ -71,6 +77,7 @@ make_dir(PAIN_LOG_FOLDER)
 make_dir(POSITION_LOG_FOLDER)
 make_dir(BREATHING_LOG_FOLDER)
 make_dir(MEDICATION_LOG_FOLDER)
+
 
 def send_vm_request(
     socketio,
@@ -129,37 +136,32 @@ def handle_gaze(data):
 
 
 @socketio.on("sentence")
-def select(data):
+def select(data: dict):
+    """
+    Function takes in all the words selected by the user up untill the time.
+    Send the words to GEMMA4 and get the full sentence. For Now, the TTS is simply imported from pyttx.
+
+    """
     intent = data.get("sentence")
     intent = ",".join(intent)
+
     print(intent)
+
     if not intent:
         socketio.emit("sentence_error", {"error": "Empty sentence"})
         return
 
-    request_id = str(uuid.uuid4())
-
-    # send to VM
-    safe_send(
-        json.dumps({"request_id": request_id, "text": intent, "request": "sentence"})
+    result = send_vm_request(
+        socketio=socketio,
+        sid=request.sid,
+        safe_send=safe_send,
+        responses=responses,
+        responses_lock=responses_lock,
+        request_type="sentence",
+        text=intent,
+        image="",
+        timeout=120,
     )
-
-    # wait for response
-    timeout = 120
-    start = time.time()
-    result = None
-
-    while time.time() - start < timeout:
-        with responses_lock:
-            if request_id in responses:
-                result = responses.pop(request_id)
-                break
-        time.sleep(0.05)
-
-    # timeout case
-    if result is None:
-        socketio.emit("sentence_error", {"error": "VM timeout"})
-        return
 
     # generate TTS
     generate_tts_audio(result["text"])
@@ -172,51 +174,46 @@ def select(data):
 
 
 @socketio.on("phrase_selected")
-def handle_phrase(data):
+def handle_phrase(data: dict):
+    """
+    Funtion to Generate the words given the previous selection of words.
+    The funtion takes in the data and pings GEMMA4 for word suggestions and returns the suggested words to webpage.
+
+
+    """
     print(data)
     phrase = data.get("sentence")
     phrase = ",".join(phrase)
+
     if not phrase:
         socketio.emit("error", {"message": "No phrase provided"}, to=request.sid)
         return
 
-    request_id = str(uuid.uuid4())
-
-    # 🔹 Send request to VM
-    safe_send(
-        json.dumps({"request_id": request_id, "text": phrase, "request": "phrase"})
+    result = send_vm_request(
+        socketio=socketio,
+        sid=request.sid,
+        safe_send=safe_send,
+        responses=responses,
+        responses_lock=responses_lock,
+        request_type="phrase",
+        text=phrase,
+        image="",
+        timeout=120,
     )
 
-    # 🔹 Tell UI we're processing (important for gaze UX)
-    socketio.emit("loading", {"status": "processing"}, to=request.sid)
-
-    # 🔹 Wait for response (non-blocking style)
-    timeout = 120
-    start = time.time()
-
-    result = None
-
-    while time.time() - start < timeout:
-        socketio.sleep(0.05)  # ✅ IMPORTANT: non-blocking
-
-        with responses_lock:
-            if request_id in responses:
-                result = responses.pop(request_id)
-                break
-
-    # 🔴 Timeout case
-    if result is None:
-        socketio.emit("error", {"message": "VM timeout"}, to=request.sid)
-        return
-
-    # 🟢 Success case
     socketio.emit("new_phrases", {"phrases": result}, to=request.sid)
 
 
 @socketio.on("select_text")
 def handle_select_text(data):
     """
-    Receives gaze-selected text from frontend
+    This Function handles the gaze detection for medical Intent.
+    Currently, there are 4 kind of assistance possible in the system.
+    1. Position related.
+    2. Medication related.
+    3. Breathing related.
+    4. Pain related.
+        - Pain related opens a new chat for quick Q&A. More like guided Q&A.
     """
 
     text = (data.get("text") or "").strip()
@@ -290,6 +287,7 @@ def handle_select_text(data):
 def handle_select_text(data):
     """
     Function to handle Guided Questioning for Pain related Issues.
+    This function takes in the question and answer from the frontend and forwards to GEMMA4 for sequential Question Answering based on Previous outputs.
 
     """
     question = data.get("question")
@@ -361,6 +359,13 @@ def handle_select_text(data):
 
 
 def process_story_request(sid, request_id, text):
+    """
+    This Function is related to tell a story part. The feature is intended to give some leisure for the user.
+
+    Based on the track selected and story genre that is choosen, plot moves.
+
+    Story is entirely generated from GEMMA4.
+    """
     try:
         # Send to VM / model
         safe_send(
@@ -378,14 +383,12 @@ def process_story_request(sid, request_id, text):
                     result = responses.pop(request_id)
                     break
 
-        # ❌ TIMEOUT
         if result is None:
             socketio.emit("error", {"message": "VM timeout"}, to=sid)
             socketio.emit("story_ack", {}, to=sid)
             return
 
-        # ✅ SUCCESS
-        story_history.append(result["text"])
+        STORY_HISTORY.append(result["text"])
 
         generate_tts_audio(result["text"], voice="not default")
 
@@ -401,17 +404,20 @@ def process_story_request(sid, request_id, text):
             to=sid,
         )
 
-        # 🔑 UNLOCK CLIENT
         socketio.emit("story_ack", {}, to=sid)
 
     except Exception as e:
-        print("❌ Error:", e)
+        print(" Error:", e)
         socketio.emit("error", {"message": "Server error"}, to=sid)
         socketio.emit("story_ack", {}, to=sid)
 
 
 @socketio.on("story_text")
 def handle_select_text(data):
+    """
+    Function to process story related Query.
+
+    """
     sid = request.sid
     text = (data.get("text") or "").strip()
 
@@ -424,20 +430,21 @@ def handle_select_text(data):
         socketio.emit("story_ack", {}, to=sid)
         return
 
-    story_history.append(text)
+    STORY_HISTORY.append(text)
 
     request_id = str(uuid.uuid4())
 
     socketio.emit("loading", {"status": "processing"}, to=sid)
 
-    # 🔥 IMPORTANT: run async
     socketio.start_background_task(process_story_request, sid, request_id, text)
 
-def write_output_to_file(FILE_PATH : str, text:str, TIMESTAMP=TIMESTAMP):
+
+def write_output_to_file(FILE_PATH: str, text: str, TIMESTAMP=TIMESTAMP):
     with open(FILE_PATH, "a+") as file:
         message = f"{TIMESTAMP}\n{text}"
         file.write(message)
-    
+
+
 # Gaze Tracker
 # Connection between the gaze detection file and the webpage.
 # this socket helps in  communicating the gaze data to the webpage.
@@ -462,10 +469,16 @@ def enforce_schema(llm_output: str):
 
 @socketio.on("frame_data")
 def handle_frame(data):
+
+    """
+    This function handles the image that is received every 10 seconds. This images later is sent to GEMMA4 for extracting the safety cues for the ALS patient and to also count the number of people in the scene. The count of people gives an indication on when to give the instructions. This helps the caretaker.
+    
+    
+    """
     global LATEST_FRAME
     global POSITION_STATUS
     global BREATHING_STATUS
-    global MEDICATION_STATUS 
+    global MEDICATION_STATUS
 
     try:
         print("Frame received")
@@ -501,7 +514,6 @@ def handle_frame(data):
                     result = responses.pop(request_id)
                     break
 
-        # ❗ TIMEOUT HANDLING
         if result is None:
             print("VM timeout for frame")
             socketio.emit("error", {"message": "Image processing timeout"})
@@ -512,29 +524,38 @@ def handle_frame(data):
         if not text:
             print("Invalid VM response:", result)
             return
+        
         text = enforce_schema(text)
         safety_status = text.get("safety_status")
         num_people = text.get("count_people")
         num_people = int(num_people)
 
+
+        #Control logic to trigger instructions to take care of the person.
         if (num_people >= 0) and (POSITION_STATUS is not None):
 
             generate_tts_audio(POSITION_STATUS)
-            write_output_to_file(f"{POSITION_LOG_FOLDER}\\logs.txt", text=POSITION_STATUS)
-       
+            write_output_to_file(
+                f"{POSITION_LOG_FOLDER}\\logs.txt", text=POSITION_STATUS
+            )
+
             POSITION_STATUS = None
-        
+
         if (num_people >= 0) and (BREATHING_STATUS is not None):
-            
+
             generate_tts_audio(BREATHING_STATUS)
-            write_output_to_file(f"{BREATHING_LOG_FOLDER}\\logs.txt", text=BREATHING_STATUS)
+            write_output_to_file(
+                f"{BREATHING_LOG_FOLDER}\\logs.txt", text=BREATHING_STATUS
+            )
 
             BREATHING_STATUS = None
-        
+
         if (num_people >= 0) and (MEDICATION_STATUS is not None):
-            
+
             generate_tts_audio(MEDICATION_STATUS)
-            write_output_to_file(f"{MEDICATION_LOG_FOLDER}\\logs.txt", text=MEDICATION_STATUS)
+            write_output_to_file(
+                f"{MEDICATION_LOG_FOLDER}\\logs.txt", text=MEDICATION_STATUS
+            )
 
             MEDICATION_STATUS = None
 
@@ -545,9 +566,13 @@ def handle_frame(data):
     except Exception as e:
         print("Error handling frame:", e)
 
-@socketio.on("get_summary")
-def handle_get_summary(data:dict)->dict:
 
+@socketio.on("get_summary")
+def handle_get_summary(data: dict) -> dict:
+    """
+    Based on all the logs, this functions outputs a structured summary for plotting. The main objective of a dashboard is to create summary and log day-to-day tasks.
+    
+    """
     breathing_related_info = data.get("bc")
     pain_related_info = data.get("pc")
     medication_related_info = data.get("mc")
@@ -558,20 +583,21 @@ def handle_get_summary(data:dict)->dict:
                   Medication Logs: {medication_related_info}\n
                   Position Logs: {position_related_info}"""
     result = send_vm_request(
-            socketio=socketio,
-            sid=request.sid,
-            safe_send=safe_send,
-            responses=responses,
-            responses_lock=responses_lock,
-            request_type="summary",
-            text=message,
-            image=None,
-            timeout=120,
+        socketio=socketio,
+        sid=request.sid,
+        safe_send=safe_send,
+        responses=responses,
+        responses_lock=responses_lock,
+        request_type="summary",
+        text=message,
+        image=None,
+        timeout=120,
     )
     if result is None:
         return
 
     socketio.emit("analysis_result", result)
+
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5050, debug=True)
