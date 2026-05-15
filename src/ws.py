@@ -4,7 +4,7 @@ import threading
 import time
 
 #The VM URL
-VM_WS_URL = "ws://35.185.60.59:8000/ws"
+VM_WS_URL = "ws://35.227.72.113:8000/ws"
 
 ws = None
 connected = False

@@ -34,7 +34,6 @@ socket_story.on("connect", () => {
     console.log("Gaze system connected");
 });
 
-// 🔓 UNLOCK when server acknowledges
 socket_story.on("story_ack", () => {
     console.log("✅ Server acknowledged, unlocking");
     InProgress = false;
@@ -54,7 +53,6 @@ socket_story.on("cursor_move", (data) => {
 // Detect gaze targets
 function checkGazeTargets(x, y) {
 
-    // 🚫 If processing, ignore gaze completely
     if (InProgress) return;
 
     const targets = document.querySelectorAll(".gaze-target");
@@ -105,9 +103,8 @@ function triggerGazeAction(element) {
     const href = element.dataset.href;
     const text = element.textContent?.trim();
 
-    // 🚫 Prevent duplicate send of same text
     if (text && text === lastSentText) {
-        console.log("⛔ Duplicate ignored:", text);
+        console.log("Duplicate ignored:", text);
         return;
     }
 
@@ -136,7 +133,7 @@ function triggerGazeAction(element) {
 
 // Update options from server
 socket_story.on("update_options", (data) => {
-    console.log("🔥 received update_options:", data);
+    console.log("received update_options:", data);
     const options = data.options || [];
 
     if (options.length < 3) {

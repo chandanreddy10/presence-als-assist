@@ -1,26 +1,20 @@
-// ================================
-// CONFIG
-// ================================
+//Dwell time configuration
 const DWELL_TIME = 1500;
 const HIT_PADDING = 20;
 
-// ================================
-// STATE
-// ================================
+//State Initialization
 let hoveredElement = null;
 let dwellStart = null;
 let triggered = false;
 
 let cursorEl = null;
 let isProcessingSentence = false;
-// ================================
-// SOCKET (GLOBAL SHARED)
-// ================================
+
+//Shared socket across the website
 const socket = window.socket;
 let sentence_phrases = [];
-// ================================
-// CURSOR SETUP
-// ================================
+
+//small red dot as pseudo-cursor setup
 function ensureCursor() {
     cursorEl = document.getElementById("cursor");
 
@@ -38,9 +32,7 @@ function ensureCursor() {
     }
 }
 
-// ================================
-// SOCKET LISTEN (GAZE STREAM)
-// ================================
+//Listen to socket and activate on this particular incoming request
 socket.on("cursor_move", (data) => {
     ensureCursor();
 
@@ -50,9 +42,7 @@ socket.on("cursor_move", (data) => {
     checkTargets(data.x, data.y);
 });
 
-// ================================
-// GAZE DETECTION
-// ================================
+//Gaze Detection for the particular tag
 function checkTargets(x, y) {
     const targets = document.querySelectorAll(".gaze-target");
 
@@ -88,50 +78,10 @@ function checkTargets(x, y) {
     if (!found) resetState();
 }
 
-// ================================ 
-// TRIGGER SELECTION (IMPORTANT CHANGE)
-// ================================
-// function triggerSelection(element) {
-//     const phrase = element.textContent.trim();
-//     const normalized = phrase.toLowerCase();
-
-//     console.log("Selected via gaze:", phrase);
-
-//     // ONLY when the word is exactly "end"
-//     if (normalized === "end") {
-
-//         console.log("Final sentence:", sentence_phrases);
-
-//         socket.emit("sentence", {
-//             sentence: sentence_phrases
-//         });
-
-//         // reset after sending
-//         sentence_phrases = [];
-//         baseDisabled = false;
-
-//         resetState();
-//         return;
-//     }
-
-//     // normal phrase flow
-//     const exists = sentence_phrases.some(
-//         p => p.toLowerCase() === normalized
-//     );
-
-//     if (!exists) {
-//         sentence_phrases.push(phrase);
-
-//         socket.emit("phrase_selected", {
-//             sentence: sentence_phrases
-//         });
-//     } else {
-//         console.log("Already selected:", phrase);
-//     }
-
-//     baseDisabled = true;
-//     resetState();
-// }
+//Things to do after Gaze detection.
+//2 Functionalities.
+//1. If there is href -> go to the href
+//2. If there is text -> send a request to the server
 function triggerSelection(element) {
     const href = element.dataset.href;
 
@@ -145,7 +95,7 @@ function triggerSelection(element) {
 
     console.log("Selected via gaze:", phrase);
 
-    // 🔴 BLOCK ALL INPUT WHILE PROCESSING
+    //important, all the 
     if (isProcessingSentence) {
         console.log("Waiting for previous sentence to finish...");
         return;
@@ -167,7 +117,6 @@ function triggerSelection(element) {
         return;
     }
 
-    // 🟢 normal phrase selection
     const exists = sentence_phrases.some(
         p => p.toLowerCase() === normalized
     );
@@ -184,16 +133,13 @@ function triggerSelection(element) {
     baseDisabled = true;
     resetState();
 }
-// ================================
-// RESET
-// ================================
+
+//Reset Gaze state.
 function resetState() {
     hoveredElement = null;
     dwellStart = null;
     triggered = false;
 }
 
-// ================================
-// INIT
-// ================================
+//Init
 window.addEventListener("DOMContentLoaded", ensureCursor);
