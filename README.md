@@ -1,9 +1,7 @@
 # Assistive Communication System for ALS Patients (GEMMA4)
+This repository contains the codebase for an assistive communication system designed for ALS patients, powered by **GEMMA4**.
 <img width="957" height="462" alt="Application Home Screen" src="https://github.com/user-attachments/assets/4c534190-1029-43dc-99a1-21096f6a00f6" />
 <img width="959" height="458" alt="Medical Intent Screen" src="https://github.com/user-attachments/assets/ad5c332a-ddfb-49c9-b90e-b42313d7b8ef" />
-
-
-This repository contains the codebase for an assistive communication system designed for ALS patients, powered by **GEMMA4**.
 
 ## 🏗️ Repository Structure
 
